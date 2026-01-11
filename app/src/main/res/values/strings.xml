@@ -19,4 +19,8 @@
         <string name="tindakan_title">Data Tindakan</string>
         <string name="edit_tindakan">Edit Tindakan</string>
         <string name="edit_janji_temu">Edit Janji Temu</string>
+        <string name="rekam_medis">Rekam Medis </string>
+        <string name="entry_rekam_medis">Entry Rekam Medis</string>
+        <string name="edit_rekam_medis">Edit Rekam Medis</string>
+        <string name="rekam_medis_dokter">Rekam Medis (Dokter)</string>
 </resources>

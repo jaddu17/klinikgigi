@@ -36,10 +36,15 @@ class DefaultContainerApp : ContainerApp {
                 ignoreUnknownKeys = true
                 prettyPrint = true
                 isLenient = true
+
+                // ❗ WAJIB AGAR ENUM MENGIKUTI @SerialName
+                encodeDefaults = true
+                explicitNulls = false
             }.asConverterFactory("application/json".toMediaType())
         )
         .client(client)
         .build()
+
 
     private val apiKlinik: ServiceApiKlinik by lazy {
         retrofit.create(ServiceApiKlinik::class.java)

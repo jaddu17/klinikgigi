@@ -10,6 +10,7 @@ import androidx.navigation.NavController
 import com.example.klinikgigi.viewmodel.AuthViewModel
 import com.example.klinikgigi.uicontroller.route.DestinasiLogin
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavController,
@@ -17,21 +18,25 @@ fun RegisterScreen(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf("dokter") } // role default
+    var role by remember { mutableStateOf("dokter") } // default role
 
-    val registerStatus by viewModel.registerStatus.collectAsState()
-    val loading by viewModel.loadingRegister.collectAsState()
+    val message by viewModel.message.collectAsState()
+    val loading by viewModel.loading.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // menangani response register
-    LaunchedEffect(registerStatus) {
-        registerStatus?.let {
+    // ================= HANDLE MESSAGE =================
+    LaunchedEffect(message) {
+        message?.let {
             snackbarHostState.showSnackbar(it)
-            if (it.contains("berhasil", true)) {
-                navController.navigate(DestinasiLogin.route)
+
+            if (it.contains("berhasil", ignoreCase = true)) {
+                navController.navigate(DestinasiLogin.route) {
+                    popUpTo(DestinasiLogin.route) { inclusive = true }
+                }
             }
-            viewModel.clearStatus()
+
+            viewModel.clearMessage()
         }
     }
 
@@ -40,7 +45,7 @@ fun RegisterScreen(
     ) { padding ->
 
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
             contentAlignment = Alignment.Center
@@ -51,7 +56,10 @@ fun RegisterScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Text("Register", style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    text = "Register",
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
                 Spacer(Modifier.height(20.dp))
 
@@ -72,15 +80,18 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = role,
                     onValueChange = { role = it },
-                    label = { Text("Role (admin/dokter)") },
+                    label = { Text("Role (admin / dokter)") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(Modifier.height(20.dp))
 
                 Button(
-                    onClick = { viewModel.register(username, password, role) },
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = {
+                        viewModel.register(username, password, role)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !loading
                 ) {
                     if (loading) {
                         CircularProgressIndicator(
@@ -92,9 +103,13 @@ fun RegisterScreen(
                     }
                 }
 
-                TextButton(onClick = {
-                    navController.navigate(DestinasiLogin.route)
-                }) {
+                Spacer(Modifier.height(8.dp))
+
+                TextButton(
+                    onClick = {
+                        navController.navigate(DestinasiLogin.route)
+                    }
+                ) {
                     Text("Sudah punya akun? Login")
                 }
             }

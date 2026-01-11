@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.klinikgigi.modeldata.JanjiTemu
-import com.example.klinikgigi.modeldata.StatusJanji // ✅ import enum
+import com.example.klinikgigi.modeldata.StatusJanji
 import com.example.klinikgigi.viewmodel.JanjiTemuViewModel
 import java.util.*
 
@@ -34,26 +34,26 @@ fun EditJanjiTemuScreen(
     val loading by viewModel.loading.collectAsState()
     val statusMsg by viewModel.status.collectAsState()
 
-    // Form state
+    // State Form
     var selectedDokterId by rememberSaveable { mutableStateOf<Int?>(null) }
     var selectedPasienId by rememberSaveable { mutableStateOf<Int?>(null) }
     var tanggal by rememberSaveable { mutableStateOf("") }
     var jam by rememberSaveable { mutableStateOf("") }
     var keluhan by rememberSaveable { mutableStateOf("") }
-    // ✅ Ganti ke StatusJanji
-    var status by rememberSaveable { mutableStateOf(StatusJanji.MENUNGGU) }
 
-    // ✅ Ganti ke List<StatusJanji>
+    // STATUS ENUM
+    var status by rememberSaveable { mutableStateOf(StatusJanji.MENUNGGU) }
     val statusList = listOf(StatusJanji.MENUNGGU, StatusJanji.SELESAI, StatusJanji.BATAL)
+
     var showSuccessDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Load data saat screen dibuka
+    // Load data by ID
     LaunchedEffect(janjiId) {
         viewModel.loadJanjiById(janjiId)
     }
 
-    // Isi form saat selectedJanji tersedia
+    // Isi form ketika selectedJanji berubah
     LaunchedEffect(selectedJanji) {
         selectedJanji?.let { janji ->
             selectedDokterId = janji.id_dokter
@@ -61,10 +61,11 @@ fun EditJanjiTemuScreen(
             tanggal = janji.tanggal_janji
             jam = janji.jam_janji
             keluhan = janji.keluhan
-            status = janji.status // ✅ janji.status adalah StatusJanji
+            status = janji.status
         }
     }
 
+    // Alert sukses update
     LaunchedEffect(statusMsg) {
         if (statusMsg?.contains("Berhasil update") == true) {
             showSuccessDialog = true
@@ -74,9 +75,9 @@ fun EditJanjiTemuScreen(
 
     if (showSuccessDialog) {
         AlertDialog(
-            onDismissRequest = { },
+            onDismissRequest = {},
             title = { Text("Sukses") },
-            text = { Text("Data berhasil diperbarui") },
+            text = { Text("Data janji temu berhasil diperbarui") },
             confirmButton = {
                 TextButton(onClick = {
                     showSuccessDialog = false
@@ -88,11 +89,11 @@ fun EditJanjiTemuScreen(
         )
     }
 
-    // DATE PICKER
+    // Date Picker
     fun openDatePicker() {
         val today = Calendar.getInstance()
-        val maxDate = today.clone() as Calendar
-        maxDate.add(Calendar.DAY_OF_YEAR, 7)
+        val max = today.clone() as Calendar
+        max.add(Calendar.DAY_OF_YEAR, 7)
 
         DatePickerDialog(
             context,
@@ -104,7 +105,7 @@ fun EditJanjiTemuScreen(
             today.get(Calendar.DAY_OF_MONTH)
         ).apply {
             datePicker.minDate = today.timeInMillis
-            datePicker.maxDate = maxDate.timeInMillis
+            datePicker.maxDate = max.timeInMillis
         }.show()
     }
 
@@ -129,7 +130,8 @@ fun EditJanjiTemuScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ============ DOKTER ============
+
+            // ================== DOKTER ==================
             var expandedDokter by remember { mutableStateOf(false) }
             val selectedDokter = dokterList.find { it.id_dokter == selectedDokterId }
 
@@ -162,7 +164,7 @@ fun EditJanjiTemuScreen(
                 }
             }
 
-            // ============ PASIEN ============
+            // ================== PASIEN ==================
             var expandedPasien by remember { mutableStateOf(false) }
             val selectedPasien = pasienList.find { it.id_pasien == selectedPasienId }
 
@@ -195,12 +197,12 @@ fun EditJanjiTemuScreen(
                 }
             }
 
-            // ============ TANGGAL ============
+            // ================== TANGGAL ==================
             OutlinedTextField(
                 value = tanggal,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Tanggal Janji Temu") },
+                label = { Text("Tanggal Janji") },
                 trailingIcon = {
                     IconButton(onClick = { openDatePicker() }) {
                         Icon(Icons.Default.DateRange, contentDescription = "Pilih Tanggal")
@@ -214,7 +216,7 @@ fun EditJanjiTemuScreen(
                     ) { openDatePicker() }
             )
 
-            // ============ JAM ============
+            // ================== JAM ==================
             OutlinedTextField(
                 value = jam,
                 onValueChange = { jam = it },
@@ -222,7 +224,7 @@ fun EditJanjiTemuScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // ============ KELUHAN ============
+            // ================== KELUHAN ==================
             OutlinedTextField(
                 value = keluhan,
                 onValueChange = { keluhan = it },
@@ -231,7 +233,7 @@ fun EditJanjiTemuScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // ============ STATUS ============
+            // ================== STATUS ==================
             var expandedStatus by remember { mutableStateOf(false) }
 
             ExposedDropdownMenuBox(
@@ -239,7 +241,6 @@ fun EditJanjiTemuScreen(
                 onExpandedChange = { expandedStatus = !expandedStatus }
             ) {
                 OutlinedTextField(
-                    // ✅ Tampilkan dengan huruf kapital di awal
                     value = status.toString().replaceFirstChar { it.titlecase() },
                     onValueChange = {},
                     readOnly = true,
@@ -252,13 +253,11 @@ fun EditJanjiTemuScreen(
                     expanded = expandedStatus,
                     onDismissRequest = { expandedStatus = false }
                 ) {
-                    statusList.forEach { statusValue ->
+                    statusList.forEach { item ->
                         DropdownMenuItem(
-                            text = {
-                                Text(statusValue.toString().replaceFirstChar { it.titlecase() })
-                            },
+                            text = { Text(item.toString().replaceFirstChar { it.titlecase() }) },
                             onClick = {
-                                status = statusValue // ✅ assign StatusJanji
+                                status = item
                                 expandedStatus = false
                             }
                         )
@@ -266,47 +265,41 @@ fun EditJanjiTemuScreen(
                 }
             }
 
-            // ============ BUTTON ============
-            Row(
+            // ================== BUTTON ==================
+            Button(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                enabled = selectedDokterId != null &&
+                        selectedPasienId != null &&
+                        tanggal.isNotBlank() &&
+                        jam.isNotBlank(),
+                onClick = {
+                    val updated = JanjiTemu(
+                        id = selectedJanji!!.id,
+                        id_dokter = selectedDokterId!!,
+                        id_pasien = selectedPasienId!!,
+                        tanggal_janji = tanggal,
+                        jam_janji = jam,
+                        keluhan = keluhan,
+                        status = status     // ✔ Paling penting, kirim ENUM benar
+                    )
+                    viewModel.updateJanjiTemu(updated)
+                }
             ) {
-                Button(
-                    modifier = Modifier.weight(1f),
-                    enabled = !loading &&
-                            selectedDokterId != null &&
-                            selectedPasienId != null &&
-                            tanggal.isNotBlank() &&
-                            jam.isNotBlank(),
-                    onClick = {
-                        val janji = JanjiTemu(
-                            id = janjiId,
-                            id_dokter = selectedDokterId!!,
-                            id_pasien = selectedPasienId!!,
-                            tanggal_janji = tanggal,
-                            jam_janji = jam,
-                            keluhan = keluhan,
-                            status = status // ✅ sekarang status adalah StatusJanji
-                        )
-                        viewModel.updateJanjiTemu(janji)
-                    }
-                ) {
-                    if (loading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("Simpan")
-                    }
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Simpan Perubahan")
                 }
+            }
 
-                OutlinedButton(
-                    modifier = Modifier.weight(1f),
-                    onClick = navigateBack
-                ) {
-                    Text("Batal")
-                }
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = navigateBack
+            ) {
+                Text("Batal")
             }
         }
     }

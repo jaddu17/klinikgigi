@@ -2,8 +2,7 @@ package com.example.klinikgigi.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.klinikgigi.modeldata.LoginRequest
-import com.example.klinikgigi.modeldata.RegisterRequest
+import com.example.klinikgigi.modeldata.User
 import com.example.klinikgigi.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,90 +12,57 @@ class AuthViewModel(
     private val repository: AuthRepository
 ) : ViewModel() {
 
-    // -----------------------
-    // STATE LOGIN
-    // -----------------------
-    private val _loginStatus = MutableStateFlow<String?>(null) // message atau "success"
-    val loginStatus: StateFlow<String?> = _loginStatus
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user
 
-    private val _loginRole = MutableStateFlow<String?>(null) // "admin" / "dokter"
-    val loginRole: StateFlow<String?> = _loginRole
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message
 
-    private val _loadingLogin = MutableStateFlow(false)
-    val loadingLogin: StateFlow<Boolean> = _loadingLogin
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
 
-    // -----------------------
-    // STATE REGISTER
-    // -----------------------
-    private val _registerStatus = MutableStateFlow<String?>(null)
-    val registerStatus: StateFlow<String?> = _registerStatus
-
-    private val _loadingRegister = MutableStateFlow(false)
-    val loadingRegister: StateFlow<Boolean> = _loadingRegister
-
-
-    // ----------------------------------------------------------
-    // LOGIN
-    // ----------------------------------------------------------
+    // ================= LOGIN =================
     fun login(username: String, password: String) {
 
-        if (username.isEmpty() || password.isEmpty()) {
-            _loginStatus.value = "Username dan Password wajib diisi"
+        if (username.isBlank() || password.isBlank()) {
+            _message.value = "Username dan password wajib diisi"
             return
         }
 
         viewModelScope.launch {
             try {
-                _loadingLogin.value = true
-                val response = repository.login(username, password)
+                _loading.value = true
+                val user = repository.login(username, password)
 
-                if (response.success) {
-                    _loginStatus.value = "success"
-                    _loginRole.value = response.role // pastikan repository mengembalikan role
-                } else {
-                    _loginStatus.value = response.message
-                    _loginRole.value = null
-                }
+                _user.value = user
+                _message.value = "success"
 
             } catch (e: Exception) {
-                _loginStatus.value = "Terjadi kesalahan pada server"
-                _loginRole.value = null
+                _user.value = null
+                _message.value = "Login gagal"
             } finally {
-                _loadingLogin.value = false
+                _loading.value = false
             }
         }
     }
 
-
-    // ----------------------------------------------------------
-    // REGISTER
-    // ----------------------------------------------------------
+    // ================= REGISTER =================
     fun register(username: String, password: String, role: String) {
 
-        if (username.isEmpty() || password.isEmpty()) {
-            _registerStatus.value = "Semua form harus diisi"
-            return
-        }
-
         viewModelScope.launch {
             try {
-                _loadingRegister.value = true
-                val response = repository.register(username, password, role)
-
-                _registerStatus.value = response.message
-
+                _loading.value = true
+                repository.register(username, password, role)
+                _message.value = "Registrasi berhasil"
             } catch (e: Exception) {
-                _registerStatus.value = "Gagal koneksi server"
+                _message.value = "Registrasi gagal"
             } finally {
-                _loadingRegister.value = false
+                _loading.value = false
             }
         }
     }
 
-    // Reset semua status
-    fun clearStatus() {
-        _loginStatus.value = null
-        _loginRole.value = null
-        _registerStatus.value = null
+    fun clearMessage() {
+        _message.value = null
     }
 }

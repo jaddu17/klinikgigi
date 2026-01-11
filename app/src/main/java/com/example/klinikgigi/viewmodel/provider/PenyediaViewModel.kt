@@ -6,9 +6,11 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.klinikgigi.repository.AplikasiKlinik
 import com.example.klinikgigi.viewmodel.AuthViewModel
-import com.example.klinikgigi.viewmodel.AdminViewModel
+import com.example.klinikgigi.viewmodel.DokterViewModel
+import com.example.klinikgigi.viewmodel.DokterDashboardViewModel
 import com.example.klinikgigi.viewmodel.JanjiTemuViewModel
 import com.example.klinikgigi.viewmodel.PasienViewModel
+import com.example.klinikgigi.viewmodel.RekamMedisViewModel
 import com.example.klinikgigi.viewmodel.TindakanViewModel
 
 // Ambil Application (AplikasiKlinik)
@@ -21,7 +23,7 @@ object PenyediaViewModel {
 
         // ----- ViewModel untuk daftar dokter -----
         initializer {
-            AdminViewModel(
+            DokterViewModel(
                 aplikasiKlinik().container.repositoryKlinik
             )
         }
@@ -45,6 +47,16 @@ object PenyediaViewModel {
         }
         initializer {
             TindakanViewModel(aplikasiKlinik().container.repositoryKlinik
+            )
+        }
+        initializer {
+            RekamMedisViewModel(
+                aplikasiKlinik().container.repositoryKlinik
+            )
+        }
+        initializer {
+            DokterDashboardViewModel(
+                aplikasiKlinik().container.repositoryKlinik
             )
         }
     }

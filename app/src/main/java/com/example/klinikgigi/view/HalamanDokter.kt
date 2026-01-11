@@ -11,12 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.klinikgigi.modeldata.Dokter
-import com.example.klinikgigi.viewmodel.AdminViewModel
+import com.example.klinikgigi.viewmodel.DokterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HalamanDokter(
-    viewModel: AdminViewModel,
+    viewModel: DokterViewModel,
     onTambah: () -> Unit,
     onEdit: (Int) -> Unit,
     onBack: () -> Unit

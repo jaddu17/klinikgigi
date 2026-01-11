@@ -1,4 +1,4 @@
-package com.example.klinikgigi.view.route
+package com.example.klinikgigi.uicontroller.route
 
 object DestinasiEditDokter {
     const val route = "edit_dokter"

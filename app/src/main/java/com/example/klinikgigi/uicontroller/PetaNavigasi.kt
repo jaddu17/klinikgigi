@@ -4,14 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.navigation.NavType
 import com.example.klinikgigi.uicontroller.route.*
 import com.example.klinikgigi.view.*
-import com.example.klinikgigi.view.route.DestinasiEditDokter
+import com.example.klinikgigi.view.dokter.DokterHomeScreen
 import com.example.klinikgigi.view.route.DestinasiEditPasien
 import com.example.klinikgigi.viewmodel.*
 import com.example.klinikgigi.viewmodel.provider.PenyediaViewModel
@@ -29,40 +29,34 @@ fun HostNavigasiKlinik(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-
     NavHost(
         navController = navController,
         startDestination = DestinasiLogin.route,
         modifier = modifier
     ) {
 
-        // ---------------- LOGIN ----------------
+        // ================= LOGIN =================
         composable(DestinasiLogin.route) {
-            val authVM: AuthViewModel = viewModel(factory = PenyediaViewModel.Factory)
-            LoginScreen(
-                navController = navController,
-                viewModel = authVM
-            )
+            val vm: AuthViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            LoginScreen(navController = navController, viewModel = vm)
         }
 
-        // ---------------- REGISTER ----------------
+        // ================= REGISTER =================
         composable(DestinasiRegister.route) {
-            val authVM: AuthViewModel = viewModel(factory = PenyediaViewModel.Factory)
-            RegisterScreen(
-                navController = navController,
-                viewModel = authVM
-            )
+            val vm: AuthViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            RegisterScreen(navController = navController, viewModel = vm)
         }
 
-        // ---------------- ADMIN HOME ----------------
+        // ================= ADMIN HOME =================
         composable(DestinasiAdminHome.route) {
-            val adminVM: AdminViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            val vm: DokterViewModel = viewModel(factory = PenyediaViewModel.Factory)
             AdminHomeScreen(
-                adminViewModel = adminVM,
+                dokterViewModel = vm,
                 navigateToHalamanDokter = { navController.navigate(DestinasiDokter.route) },
                 navigateToHalamanPasien = { navController.navigate(DestinasiHalamanPasien.route) },
                 navigateToJanjiTemu = { navController.navigate(DestinasiAdminJanji.route) },
                 navigateToHalamanTindakan = { navController.navigate(DestinasiTindakan.route) },
+                navigateToHalamanRekamMedis = { navController.navigate(DestinasiRekamMedis.route) },
                 navigateLogout = {
                     navController.navigate(DestinasiLogin.route) {
                         popUpTo(DestinasiLogin.route) { inclusive = true }
@@ -71,177 +65,198 @@ fun HostNavigasiKlinik(
             )
         }
 
-        // ---------------- ADD / EDIT DOKTER ----------------
-        composable(
-            route = DestinasiAddEditDokter.route,
-            arguments = listOf(navArgument("dokterId") { type = NavType.IntType })
-        ) {
-            val adminVM: AdminViewModel = viewModel(factory = PenyediaViewModel.Factory)
-            HalamanEntryDokter(
-                viewModel = adminVM,
-                onSelesai = { navController.popBackStack() },
-                onKembali = { navController.popBackStack() }
+        composable(DestinasiDokterHome.route) {
+            DokterHomeScreen(
+                navigateToJanjiTemu = {
+                    navController.navigate(DestinasiDokterJanji.route)
+                },
+                navigateToRekamMedis = {
+                    navController.navigate(DestinasiRekamMedisDokter.route)
+                },
+                navigateLogout = {
+                    navController.navigate("login") {
+                        popUpTo(0)
+                    }
+                }
             )
         }
 
-        // ---------------- LIST DOKTER ----------------
+        composable(DestinasiDokterJanji.route) {
+
+            val viewModel: DokterDashboardViewModel =
+                viewModel(factory = PenyediaViewModel.Factory)
+
+            JanjiTemuDokterScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(DestinasiRekamMedisDokter.route) {
+
+            val vm: RekamMedisViewModel =
+                viewModel(factory = PenyediaViewModel.Factory)
+
+            RekamMedisDokterScreen(
+                viewModel = vm,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // ================= DOKTER =================
         composable(DestinasiDokter.route) {
-            val adminVM: AdminViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            val vm: DokterViewModel = viewModel(factory = PenyediaViewModel.Factory)
             HalamanDokter(
-                viewModel = adminVM,
+                viewModel = vm,
                 onTambah = { navController.navigate(DestinasiAddEditDokter.createRoute(null)) },
-                onEdit = { dokterId ->
-                    navController.navigate("${DestinasiEditDokter.route}/$dokterId")
+                onEdit = { id ->
+                    navController.navigate("${DestinasiEditDokter.route}/$id")
                 },
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // ---------------- EDIT DOKTER ----------------
         composable(
             route = DestinasiEditDokter.routeWithArgs,
-            arguments = listOf(navArgument(DestinasiEditDokter.dokterIdArg) { type = NavType.IntType })
-        ) { backStackEntry ->
-            val dokterId = backStackEntry.arguments?.getInt(DestinasiEditDokter.dokterIdArg) ?: 0
-            val adminVM: AdminViewModel = viewModel(factory = PenyediaViewModel.Factory)
-
-            EditDokterScreen(
-                dokterId = dokterId,
-                viewModel = adminVM,
-                onBack = { navController.popBackStack() }
-            )
+            arguments = listOf(navArgument(DestinasiEditDokter.dokterIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            val id = it.arguments!!.getInt(DestinasiEditDokter.dokterIdArg)
+            val vm: DokterViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EditDokterScreen(dokterId = id, viewModel = vm) {
+                navController.popBackStack()
+            }
         }
 
-        // ---------------- ADMIN JANJI TEMU LIST ----------------
-        composable(DestinasiAdminJanji.route) {
-            val janjiVM: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
-
-            AdminJanjiTemuScreen(
-                viewModel = janjiVM,
-                navigateToAdd = {
-                    navController.navigate(DestinasiEntryJanji.route)
-                },
-                navigateToEdit = { janjiId ->
-                    navController.navigate("${DestinasiEditJanjiTemu.route}/$janjiId")
-                },
-                navigateBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-// ============ TAMBAH JANJI TEMU (TANPA ARGUMEN) ============
-        composable(DestinasiEntryJanji.route) {
-            val janjiVM: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
-
-            EntryJanjiTemuScreen(
-                viewModel = janjiVM,
-                janjiId = null,
-                navigateBack = { navController.popBackStack() }
-            )
-        }
-
-// ============ EDIT JANJI TEMU (DENGAN ARGUMEN) ============
-        composable(
-            route = DestinasiEditJanjiTemu.routeWithArgs,
-            arguments = listOf(
-                navArgument(DestinasiEditJanjiTemu.janjiIdArg) {
-                    type = NavType.IntType
-                }
-            )
-        ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getInt(DestinasiEditJanjiTemu.janjiIdArg)
-
-            val janjiVM: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
-
-            // ✅ Perbaiki syntax: gunakan tanda kurung!
-            EditJanjiTemuScreen(
-                viewModel = janjiVM,
-                janjiId = id!!,
-                navigateBack = { navController.popBackStack() } // ✅ tambahkan parameter navigateBack
-            )
-        }
-
-
-        // ---------------- HALAMAN PASIEN ----------------
+        // ================= PASIEN =================
         composable(DestinasiHalamanPasien.route) {
-            val pasienVM: PasienViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            val vm: PasienViewModel = viewModel(factory = PenyediaViewModel.Factory)
             HalamanPasienScreen(
-                pasienViewModel = pasienVM,
+                pasienViewModel = vm,
                 navigateToEntryPasien = { navController.navigate(DestinasiEntryPasien.route) },
-                navigateToEditPasien = { pasienId ->
-                    navController.navigate("${DestinasiEditPasien.route}/$pasienId")
+                navigateToEditPasien = { id ->
+                    navController.navigate("${DestinasiEditPasien.route}/$id")
                 },
                 navigateBack = { navController.popBackStack() }
             )
         }
 
-        // ---------------- ENTRY PASIEN ----------------
         composable(DestinasiEntryPasien.route) {
-            val pasienVM: PasienViewModel = viewModel(factory = PenyediaViewModel.Factory)
-            EntryPasienScreen(
-                pasienViewModel = pasienVM,
-                pasienId = null,
-                navigateBack = { navController.popBackStack() }
-            )
+            val vm: PasienViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EntryPasienScreen(vm, null) { navController.popBackStack() }
         }
 
-        // ---------------- EDIT PASIEN ----------------
         composable(
             route = DestinasiEditPasien.routeWithArgs,
             arguments = listOf(navArgument(DestinasiEditPasien.pasienIdArg) {
                 type = NavType.IntType
             })
-        ) { backStackEntry ->
-            val pasienId = backStackEntry.arguments?.getInt(DestinasiEditPasien.pasienIdArg)
-            val pasienVM: PasienViewModel = viewModel(factory = PenyediaViewModel.Factory)
+        ) {
+            val id = it.arguments!!.getInt(DestinasiEditPasien.pasienIdArg)
+            val vm: PasienViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EditPasienScreen(id, vm) { navController.popBackStack() }
+        }
 
-            EditPasienScreen(
-                pasienId = pasienId!!,
-                pasienViewModel = pasienVM,
+        // ================= JANJI TEMU =================
+        composable(DestinasiAdminJanji.route) {
+            val vm: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            AdminJanjiTemuScreen(
+                viewModel = vm,
+                navigateToAdd = { navController.navigate(DestinasiEntryJanji.route) },
+                navigateToEdit = { id ->
+                    navController.navigate("${DestinasiEditJanjiTemu.route}/$id")
+                },
+                navigateToRekamMedis = { idJanji ->
+                    navController.navigate(
+                        DestinasiEntryRekamMedis.createRoute(idJanji)
+                    )
+                },
                 navigateBack = { navController.popBackStack() }
             )
         }
 
-        // ---------------- ENTRY TINDAKAN ----------------
-        composable(DestinasiEntryTindakan.route) {
-            val vm: TindakanViewModel = viewModel(factory = PenyediaViewModel.Factory)
-            EntryTindakanScreen(
-                viewModel = vm,
-                onBack = { navController.popBackStack() }
-            )
+        composable(DestinasiEntryJanji.route) {
+            val vm: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EntryJanjiTemuScreen(vm, null) { navController.popBackStack() }
         }
 
-        // ---------------- LIST TINDAKAN ----------------
+        composable(
+            route = DestinasiEditJanjiTemu.routeWithArgs,
+            arguments = listOf(navArgument(DestinasiEditJanjiTemu.janjiIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            val id = it.arguments!!.getInt(DestinasiEditJanjiTemu.janjiIdArg)
+            val vm: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EditJanjiTemuScreen(vm, id) { navController.popBackStack() }
+        }
+
+        // ================= TINDAKAN =================
         composable(DestinasiTindakan.route) {
             val vm: TindakanViewModel = viewModel(factory = PenyediaViewModel.Factory)
             HalamanTindakanScreen(
                 viewModel = vm,
                 onTambah = { navController.navigate(DestinasiEntryTindakan.route) },
-                onEdit = { tindakanId ->
-                    navController.navigate("${DestinasiEditTindakan.route}/$tindakanId")
+                onEdit = { id ->
+                    navController.navigate("${DestinasiEditTindakan.route}/$id")
                 },
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // ---------------- EDIT TINDAKAN ----------------
+        composable(DestinasiEntryTindakan.route) {
+            val vm: TindakanViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EntryTindakanScreen(vm) { navController.popBackStack() }
+        }
+
         composable(
             route = DestinasiEditTindakan.routeWithArgs,
-            arguments = listOf(
-                navArgument(DestinasiEditTindakan.tindakanIdArg) {
-                    type = NavType.IntType
-                }
-            )
-        ) { backStackEntry ->
-            val tindakanId = backStackEntry.arguments?.getInt(DestinasiEditTindakan.tindakanIdArg) ?: 0
-            val tindakanVM: TindakanViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            arguments = listOf(navArgument(DestinasiEditTindakan.tindakanIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            val id = it.arguments!!.getInt(DestinasiEditTindakan.tindakanIdArg)
+            val vm: TindakanViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EditTindakanScreen(id, vm) { navController.popBackStack() }
+        }
 
-            EditTindakanScreen(
-                tindakanId = tindakanId,
-                viewModel = tindakanVM,
+        // ================= REKAM MEDIS =================
+        composable(DestinasiRekamMedis.route) {
+            val vm: RekamMedisViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            HalamanRekamMedis(
+                viewModel = vm,
+                onEdit = { id ->
+                    navController.navigate(DestinasiEditRekamMedis.createRoute(id))
+                },
                 onBack = { navController.popBackStack() }
             )
+        }
+
+        composable(
+            route = DestinasiEntryRekamMedis.route,
+            arguments = listOf(navArgument("idJanji") {
+                type = NavType.IntType
+            })
+        ) {
+            val idJanji = it.arguments!!.getInt("idJanji")
+            val vm: RekamMedisViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EntryRekamMedisScreen(vm, null, idJanji) {
+                navController.popBackStack()
+            }
+        }
+
+        composable(
+            route = DestinasiEditRekamMedis.route,
+            arguments = listOf(navArgument("idRekamMedis") {
+                type = NavType.IntType
+            })
+        ) {
+            val id = it.arguments!!.getInt("idRekamMedis")
+            val vm: RekamMedisViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            EditRekamMedisScreen(vm, id) {
+                navController.popBackStack()
+            }
         }
     }
 }

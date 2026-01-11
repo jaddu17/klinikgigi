@@ -28,6 +28,10 @@ fun HalamanPasienScreen(
     // State untuk AlertDialog hapus
     var pasienYangAkanDihapus by remember { mutableStateOf<Pasien?>(null) }
 
+    LaunchedEffect(Unit) {
+        pasienViewModel.loadPasien()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

@@ -2,11 +2,16 @@ package com.example.klinikgigi.repository
 
 import com.example.klinikgigi.modeldata.Dokter
 import com.example.klinikgigi.modeldata.JanjiTemu
+import com.example.klinikgigi.modeldata.JanjiTemuPerDokter
 import com.example.klinikgigi.modeldata.Pasien
+import com.example.klinikgigi.modeldata.RekamMedis
 import com.example.klinikgigi.modeldata.Tindakan
 import com.example.klinikgigi.remote.ServiceApiKlinik
 import retrofit2.Response
 
+/**
+ * Repository interface
+ */
 interface RepositoryKlinik {
 
     // ---------------- Dokter ----------------
@@ -26,39 +31,95 @@ interface RepositoryKlinik {
     suspend fun createJanjiTemu(janji: JanjiTemu): Response<Void>
     suspend fun updateJanjiTemu(janji: JanjiTemu): Response<Void>
     suspend fun deleteJanjiTemu(id: Int): Response<Void>
+    // ---------------- Janji Temu (Grouped) ----------------
+    suspend fun getJanjiTemuPerDokter(): List<JanjiTemuPerDokter>
+
 
     // ---------------- Tindakan ----------------
     suspend fun getTindakan(): List<Tindakan>
     suspend fun createTindakan(tindakan: Tindakan): Response<Void>
     suspend fun updateTindakan(tindakan: Tindakan): Response<Void>
     suspend fun deleteTindakan(id: Int): Response<Void>
+
+    // ---------------- Rekam Medis ----------------
+    suspend fun getRekamMedis(): List<RekamMedis>
+    suspend fun createRekamMedis(rekamMedis: RekamMedis): Response<Void>
+    suspend fun updateRekamMedis(rekamMedis: RekamMedis): Response<Void>
+    suspend fun deleteRekamMedis(id: Int): Response<Void>
 }
 
+/**
+ * Repository implementation
+ */
 class JaringanRepositoryKlinik(
     private val api: ServiceApiKlinik
 ) : RepositoryKlinik {
 
     // ---------------- Dokter ----------------
-    override suspend fun getDokter(): List<Dokter> = api.getDokter()
-    override suspend fun createDokter(dokter: Dokter): Response<Void> = api.createDokter(dokter)
-    override suspend fun updateDokter(dokter: Dokter): Response<Void> = api.updateDokter(dokter)
-    override suspend fun deleteDokter(id: Int): Response<Void> = api.deleteDokter(id)
+    override suspend fun getDokter(): List<Dokter> =
+        api.getDokter()
+
+    override suspend fun createDokter(dokter: Dokter): Response<Void> =
+        api.createDokter(dokter)
+
+    override suspend fun updateDokter(dokter: Dokter): Response<Void> =
+        api.updateDokter(dokter)
+
+    override suspend fun deleteDokter(id: Int): Response<Void> =
+        api.deleteDokter(id)
 
     // ---------------- Pasien ----------------
-    override suspend fun getPasien(): List<Pasien> = api.getPasien()
-    override suspend fun createPasien(pasien: Pasien): Response<Void> = api.createPasien(pasien)
-    override suspend fun updatePasien(pasien: Pasien): Response<Void> = api.updatePasien(pasien)
-    override suspend fun deletePasien(id: Int): Response<Void> = api.deletePasien(id)
+    override suspend fun getPasien(): List<Pasien> =
+        api.getPasien()
+
+    override suspend fun createPasien(pasien: Pasien): Response<Void> =
+        api.createPasien(pasien)
+
+    override suspend fun updatePasien(pasien: Pasien): Response<Void> =
+        api.updatePasien(pasien)
+
+    override suspend fun deletePasien(id: Int): Response<Void> =
+        api.deletePasien(id)
 
     // ---------------- Janji Temu ----------------
-    override suspend fun getJanjiTemu(): List<JanjiTemu> = api.getJanjiTemu()
-    override suspend fun createJanjiTemu(janji: JanjiTemu): Response<Void> = api.createJanjiTemu(janji)
-    override suspend fun updateJanjiTemu(janji: JanjiTemu): Response<Void> = api.updateJanjiTemu(janji)
-    override suspend fun deleteJanjiTemu(id: Int): Response<Void> = api.deleteJanjiTemu(id)
+    override suspend fun getJanjiTemu(): List<JanjiTemu> =
+        api.getJanjiTemu()
+
+    override suspend fun createJanjiTemu(janji: JanjiTemu): Response<Void> =
+        api.createJanjiTemu(janji)
+
+    override suspend fun updateJanjiTemu(janji: JanjiTemu): Response<Void> =
+        api.updateJanjiTemu(janji)
+
+    override suspend fun deleteJanjiTemu(id: Int): Response<Void> =
+        api.deleteJanjiTemu(id)
+
+    override suspend fun getJanjiTemuPerDokter(): List<JanjiTemuPerDokter> =
+        api.getJanjiTemuPerDokter()
 
     // ---------------- Tindakan ----------------
-    override suspend fun getTindakan(): List<Tindakan> = api.getTindakan()
-    override suspend fun createTindakan(tindakan: Tindakan): Response<Void> = api.createTindakan(tindakan)
-    override suspend fun updateTindakan(tindakan: Tindakan): Response<Void> = api.updateTindakan(tindakan)
-    override suspend fun deleteTindakan(id: Int): Response<Void> = api.deleteTindakan(id)
+    override suspend fun getTindakan(): List<Tindakan> =
+        api.getTindakan()
+
+    override suspend fun createTindakan(tindakan: Tindakan): Response<Void> =
+        api.createTindakan(tindakan)
+
+    override suspend fun updateTindakan(tindakan: Tindakan): Response<Void> =
+        api.updateTindakan(tindakan)
+
+    override suspend fun deleteTindakan(id: Int): Response<Void> =
+        api.deleteTindakan(id)
+
+    // ---------------- Rekam Medis ----------------
+    override suspend fun getRekamMedis(): List<RekamMedis> =
+        api.getRekamMedis()
+
+    override suspend fun createRekamMedis(rekamMedis: RekamMedis): Response<Void> =
+        api.createRekamMedis(rekamMedis)
+
+    override suspend fun updateRekamMedis(rekamMedis: RekamMedis): Response<Void> =
+        api.updateRekamMedis(rekamMedis)
+
+    override suspend fun deleteRekamMedis(id: Int): Response<Void> =
+        api.deleteRekamMedis(id)
 }

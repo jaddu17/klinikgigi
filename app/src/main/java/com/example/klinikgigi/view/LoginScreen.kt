@@ -9,11 +9,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.klinikgigi.viewmodel.AuthViewModel
-import com.example.klinikgigi.uicontroller.route.DestinasiAdminHome
-import com.example.klinikgigi.uicontroller.route.DestinasiDokterHome
-import com.example.klinikgigi.uicontroller.route.DestinasiRegister
-import com.example.klinikgigi.uicontroller.route.DestinasiLogin
+import com.example.klinikgigi.uicontroller.route.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -22,30 +20,35 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val loginStatus by viewModel.loginStatus.collectAsState()
-    val loginRole by viewModel.loginRole.collectAsState()
-    val loading by viewModel.loadingLogin.collectAsState()
+    val user by viewModel.user.collectAsState()
+    val message by viewModel.message.collectAsState()
+    val loading by viewModel.loading.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Menangani response login
-    LaunchedEffect(loginStatus, loginRole) {
-        val status = loginStatus
-        val role = loginRole
+    // ================= HANDLE LOGIN RESULT =================
+    LaunchedEffect(user, message) {
 
-        if (status == "success" && role != null) {
-            when (role) {
-                "admin" -> navController.navigate(DestinasiAdminHome.route) {
-                    popUpTo(DestinasiLogin.route) { inclusive = true }
-                }
-                "dokter" -> navController.navigate(DestinasiDokterHome.route) {
-                    popUpTo(DestinasiLogin.route) { inclusive = true }
-                }
+        // ❌ Jika gagal login
+        message?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearMessage()
+        }
+
+        // ✅ Jika login sukses
+        user?.let { loggedUser ->
+            val targetRoute = when (loggedUser.role.lowercase()) {
+                "admin" -> DestinasiAdminHome.route
+                "dokter" -> DestinasiDokterHome.route
+                else -> DestinasiLogin.route // fallback aman
             }
-            viewModel.clearStatus()
-        } else if (status != null && status != "success") {
-            snackbarHostState.showSnackbar(status)
-            viewModel.clearStatus()
+
+            navController.navigate(targetRoute) {
+                // clear seluruh back stack supaya back button tidak kembali ke login
+                popUpTo(0) { inclusive = true }
+            }
+
+            viewModel.clearMessage()
         }
     }
 
@@ -54,7 +57,7 @@ fun LoginScreen(
     ) { padding ->
 
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
             contentAlignment = Alignment.Center
@@ -67,7 +70,10 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Text("Login", style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    text = "Login",
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
                 Spacer(Modifier.height(20.dp))
 
@@ -92,7 +98,8 @@ fun LoginScreen(
 
                 Button(
                     onClick = { viewModel.login(username, password) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !loading
                 ) {
                     if (loading) {
                         CircularProgressIndicator(
@@ -107,9 +114,9 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                TextButton(onClick = {
-                    navController.navigate(DestinasiRegister.route)
-                }) {
+                TextButton(
+                    onClick = { navController.navigate(DestinasiRegister.route) }
+                ) {
                     Text("Belum punya akun? Register")
                 }
             }

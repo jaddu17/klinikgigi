@@ -8,12 +8,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import com.example.klinikgigi.modeldata.Dokter
-import com.example.klinikgigi.viewmodel.AdminViewModel
+import com.example.klinikgigi.viewmodel.DokterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HalamanEntryDokter(
-    viewModel: AdminViewModel,
+    viewModel: DokterViewModel,
     onSelesai: () -> Unit,
     onKembali: () -> Unit
 ) {

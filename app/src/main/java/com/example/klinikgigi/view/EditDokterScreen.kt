@@ -8,13 +8,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.klinikgigi.viewmodel.AdminViewModel
+import com.example.klinikgigi.viewmodel.DokterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditDokterScreen(
     dokterId: Int,
-    viewModel: AdminViewModel,
+    viewModel: DokterViewModel,
     onBack: () -> Unit
 ) {
     // Pastikan data dokter sudah ada

@@ -14,6 +14,9 @@ class JanjiTemuViewModel(
     private val repository: RepositoryKlinik
 ) : ViewModel() {
 
+    // ======================
+    // STATE
+    // ======================
     private val _janjiList = MutableStateFlow<List<JanjiTemu>>(emptyList())
     val janjiList: StateFlow<List<JanjiTemu>> = _janjiList
 
@@ -23,7 +26,6 @@ class JanjiTemuViewModel(
     private val _dokterList = MutableStateFlow<List<Dokter>>(emptyList())
     val dokterList: StateFlow<List<Dokter>> = _dokterList
 
-    // ✅ TAMBAHAN: untuk menyimpan janji yang sedang diedit (seperti selectedPasien)
     private val _selectedJanji = MutableStateFlow<JanjiTemu?>(null)
     val selectedJanji: StateFlow<JanjiTemu?> = _selectedJanji
 
@@ -33,21 +35,27 @@ class JanjiTemuViewModel(
     private val _status = MutableStateFlow<String?>(null)
     val status: StateFlow<String?> = _status
 
+    // ======================
+    // INIT
+    // ======================
     init {
-        loadAll()
-    }
-
-    private fun loadAll() {
-        loadJanji()
         loadPasien()
         loadDokter()
+        loadJanji()
     }
 
+    // ======================
+    // LOAD DATA
+    // ======================
     fun loadJanji() {
         viewModelScope.launch {
             _loading.value = true
             try {
-                _janjiList.value = repository.getJanjiTemu()
+                val dataDariServer = repository.getJanjiTemu()
+                // .toList() sangat penting agar StateFlow mendeteksi referensi baru
+                _janjiList.value = dataDariServer.toList()
+            } catch (e: Exception) {
+                _status.value = "Gagal memuat: ${e.message}"
             } finally {
                 _loading.value = false
             }
@@ -56,66 +64,98 @@ class JanjiTemuViewModel(
 
     private fun loadPasien() {
         viewModelScope.launch {
-            _pasienList.value = repository.getPasien()
+            try {
+                _pasienList.value = repository.getPasien().toList()
+            } catch (e: Exception) {
+                _status.value = "Gagal memuat pasien: ${e.message}"
+            }
         }
     }
 
     private fun loadDokter() {
         viewModelScope.launch {
-            _dokterList.value = repository.getDokter()
+            try {
+                _dokterList.value = repository.getDokter().toList()
+            } catch (e: Exception) {
+                _status.value = "Gagal memuat dokter: ${e.message}"
+            }
         }
     }
 
-    // ✅ SAMA SEPERTI loadPasienById — LOAD SATU JANJI TEMU
+    // ======================
+    // LOAD PER ID (EDIT)
+    // ======================
     fun loadJanjiById(id: Int) {
         viewModelScope.launch {
             _loading.value = true
             try {
-                val list = repository.getJanjiTemu()
-                val janji = list.find { it.id == id }
+                val janji = repository.getJanjiTemu().find { it.id == id }
                 _selectedJanji.value = janji
+                if (janji == null) _status.value = "Janji tidak ditemukan"
+            } catch (e: Exception) {
+                _status.value = "Gagal memuat data: ${e.message}"
             } finally {
                 _loading.value = false
             }
         }
     }
 
+    // ======================
+    // CREATE
+    // ======================
     fun createJanjiTemu(janji: JanjiTemu) {
         viewModelScope.launch {
             _status.value = "loading"
             try {
                 repository.createJanjiTemu(janji)
-                loadJanji()
+                // Refresh list dan buat list baru agar Compose recompose
+                _janjiList.value = repository.getJanjiTemu().toList()
                 _status.value = "Berhasil menambah janji"
             } catch (e: Exception) {
-                _status.value = "Gagal menambah"
+                _status.value = "Gagal menambah janji: ${e.message}"
             }
         }
     }
 
+    // ======================
+    // UPDATE
+    // ======================
     fun updateJanjiTemu(janji: JanjiTemu) {
         viewModelScope.launch {
             _status.value = "loading"
             try {
-                repository.updateJanjiTemu(janji)
-                loadJanji()
-                _selectedJanji.value = janji // ✅ simpan yang terupdate
-                _status.value = "Berhasil update janji"
+                val response = repository.updateJanjiTemu(janji)
+                if (response.isSuccessful) {
+                    // PANGGIL loadJanji() yang sudah diperbaiki di atas
+                    loadJanji()
+                    _status.value = "Berhasil update janji"
+                }
             } catch (e: Exception) {
-                _status.value = "Gagal update"
+                _status.value = "Gagal update: ${e.message}"
             }
         }
     }
 
+
+    // ======================
+    // DELETE
+    // ======================
     fun deleteJanji(id: Int) {
         viewModelScope.launch {
             try {
                 repository.deleteJanjiTemu(id)
-                loadJanji()
-            } catch (_: Exception) {}
+                // Refresh list dan buat list baru agar Compose recompose
+                _janjiList.value = repository.getJanjiTemu().toList()
+                _status.value = "Berhasil menghapus janji"
+            } catch (e: Exception) {
+                _status.value = "Gagal hapus janji: ${e.message}"
+            }
         }
     }
 
+    // ======================
+    // CLEAR STATUS
+    // ======================
     fun clearStatus() {
         _status.value = null
     }

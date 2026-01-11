@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.klinikgigi.modeldata.JanjiTemu
 import com.example.klinikgigi.viewmodel.JanjiTemuViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,29 +19,26 @@ fun AdminJanjiTemuScreen(
     viewModel: JanjiTemuViewModel,
     navigateToAdd: () -> Unit,
     navigateToEdit: (Int) -> Unit,
+    navigateToRekamMedis: (Int) -> Unit,
     navigateBack: () -> Unit
 ) {
     val janjiList by viewModel.janjiList.collectAsState()
     val pasienList by viewModel.pasienList.collectAsState()
     val dokterList by viewModel.dokterList.collectAsState()
     val loading by viewModel.loading.collectAsState()
-    val status by viewModel.status.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(status) {
-        status?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearStatus()
-        }
+    LaunchedEffect(Unit) {
+        viewModel.loadJanji()
     }
 
-    fun getNamaPasien(idPasien: Int): String {
-        return pasienList.find { it.id_pasien == idPasien }?.nama_pasien ?: "Pasien tidak ditemukan"
-    }
+    fun getNamaPasien(idPasien: Int): String =
+        pasienList.find { it.id_pasien == idPasien }?.nama_pasien
+            ?: "Pasien tidak ditemukan"
 
-    fun getNamaDokter(idDokter: Int): String {
-        return dokterList.find { it.id_dokter == idDokter }?.nama_dokter ?: "Dokter tidak ditemukan"
-    }
+    fun getNamaDokter(idDokter: Int): String =
+        dokterList.find { it.id_dokter == idDokter }?.nama_dokter
+            ?: "Dokter tidak ditemukan"
 
     Scaffold(
         topBar = {
@@ -64,7 +60,10 @@ fun AdminJanjiTemuScreen(
     ) { padding ->
 
         if (loading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
         } else {
@@ -72,41 +71,56 @@ fun AdminJanjiTemuScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(16.dp)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(janjiList, key = { it.id }) { janji ->
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text("Pasien: ${getNamaPasien(janji.id_pasien)}")
-                            Text("Dokter: ${getNamaDokter(janji.id_dokter)}")
-                            Text("Tanggal: ${janji.tanggal_janji} • ${janji.jam_janji}")
-                            Text("Keluhan: ${janji.keluhan}")
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = getNamaPasien(janji.id_pasien),
+                                style = MaterialTheme.typography.titleMedium
+                            )
 
-                            // ✅ STATUS SUDAH ENUM — TIDAK PERLU ifBlank!
-                            val statusText = janji.status.toString().replaceFirstChar { it.titlecase() }
-                            Text("Status: $statusText")
+                            Text("Dokter  : ${getNamaDokter(janji.id_dokter)}")
+                            Text("Tanggal : ${janji.tanggal_janji} • ${janji.jam_janji}")
+                            Text("Keluhan : ${janji.keluhan}")
+                            Text("Status  : ${janji.status.name}")
+
+                            Spacer(modifier = Modifier.height(8.dp))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                TextButton(
-                                    onClick = {
-                                        navigateToEdit(janji.id)
-                                    }
+
+                                // 🔹 KE REKAM MEDIS
+                                Button(
+                                    onClick = { navigateToRekamMedis(janji.id) }
                                 ) {
-                                    Text("Edit")
+                                    Text("Rekam Medis")
                                 }
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Row {
+                                    TextButton(
+                                        onClick = { navigateToEdit(janji.id) }
+                                    ) {
+                                        Text("Edit")
+                                    }
 
-                                TextButton(onClick = { viewModel.deleteJanji(janji.id) }) {
-                                    Text("Hapus")
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    TextButton(
+                                        onClick = { viewModel.deleteJanji(janji.id) }
+                                    ) {
+                                        Text("Hapus")
+                                    }
                                 }
                             }
                         }
