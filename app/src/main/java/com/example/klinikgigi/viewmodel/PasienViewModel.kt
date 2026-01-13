@@ -7,41 +7,111 @@ import com.example.klinikgigi.repository.RepositoryKlinik
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
-class PasienViewModel(private val repository: RepositoryKlinik) : ViewModel() {
+class PasienViewModel(
+    private val repository: RepositoryKlinik
+) : ViewModel() {
 
+    // ================= STATE =================
     private val _pasienList = MutableStateFlow<List<Pasien>>(emptyList())
-    val pasienList: StateFlow<List<Pasien>> get() = _pasienList
+    val pasienList: StateFlow<List<Pasien>> = _pasienList
 
     private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> get() = _loading
+    val loading: StateFlow<Boolean> = _loading
 
     private val _selectedPasien = MutableStateFlow<Pasien?>(null)
-    val selectedPasien: StateFlow<Pasien?> get() = _selectedPasien
+    val selectedPasien: StateFlow<Pasien?> = _selectedPasien
+
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
 
     init {
         loadPasien()
     }
 
-    /** ======================= LOAD SEMUA PASIEN ======================= */
+    // ================= LOAD PASIEN =================
     fun loadPasien() {
         viewModelScope.launch {
             _loading.value = true
             try {
                 _pasienList.value = repository.getPasien()
+            } catch (e: Exception) {
+                _message.value = e.message
             } finally {
                 _loading.value = false
             }
         }
     }
 
-    /** ======================= LOAD 1 PASIEN BY ID ======================= */
+    // ================= SEARCH PASIEN =================
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        searchPasien(query)
+    }
+
+    private fun searchPasien(query: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _pasienList.value =
+                    if (query.isBlank()) {
+                        repository.getPasien()
+                    } else {
+                        repository.getPasien(query)
+                    }
+            } catch (e: Exception) {
+                _message.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    // ================= LOAD BY ID =================
     fun loadPasienById(id: Int) {
         viewModelScope.launch {
             _loading.value = true
             try {
                 val list = repository.getPasien()
-                val pasien = list.find { it.id_pasien == id }
+                _selectedPasien.value = list.find { it.id_pasien == id }
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    // ================= CREATE =================
+    fun createPasien(pasien: Pasien) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val response = repository.createPasien(pasien)
+                if (response.isSuccessful) {
+                    _message.value = "Pasien berhasil ditambahkan"
+                    loadPasien()
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    _message.value = parseError(errorBody)
+                }
+            } catch (e: Exception) {
+                _message.value = e.message
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    // ================= UPDATE =================
+    fun updatePasien(pasien: Pasien) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                repository.updatePasien(pasien)
+                loadPasien()
                 _selectedPasien.value = pasien
             } finally {
                 _loading.value = false
@@ -49,34 +119,7 @@ class PasienViewModel(private val repository: RepositoryKlinik) : ViewModel() {
         }
     }
 
-    /** ======================= CREATE PASIEN ======================= */
-    fun createPasien(pasien: Pasien) {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                repository.createPasien(pasien)
-                loadPasien()   // refresh list
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
-    /** ======================= UPDATE PASIEN ======================= */
-    fun updatePasien(pasien: Pasien) {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                repository.updatePasien(pasien)
-                loadPasien() // refresh list
-                _selectedPasien.value = pasien // perbaikan: simpan pasien terupdate
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
-    /** ======================= HAPUS PASIEN ======================= */
+    // ================= DELETE =================
     fun deletePasien(id: Int) {
         viewModelScope.launch {
             _loading.value = true
@@ -86,6 +129,21 @@ class PasienViewModel(private val repository: RepositoryKlinik) : ViewModel() {
             } finally {
                 _loading.value = false
             }
+        }
+    }
+
+    // ================= UTIL =================
+    fun clearMessage() {
+        _message.value = null
+    }
+
+    private fun parseError(errorBody: String?): String {
+        if (errorBody.isNullOrBlank()) return "Terjadi kesalahan"
+        return try {
+            val json = JSONObject(errorBody)
+            json.optString("error", "Terjadi kesalahan")
+        } catch (e: Exception) {
+            "Terjadi kesalahan"
         }
     }
 }

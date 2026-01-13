@@ -20,11 +20,11 @@ interface ServiceApiKlinik {
     suspend fun login(@Body body: Map<String, String>): User
 
     @POST("users/register.php")
-    suspend fun register(@Body body: Map<String, String>): User
+    suspend fun register(@Body body: Map<String, String>): Response<User>
 
     // ---------------- DOKTER ----------------
     @GET("dokter/read.php")
-    suspend fun getDokter(): List<Dokter>
+    suspend fun getDokter(@Query("search") search: String? = null): List<Dokter>
 
     @POST("dokter/create.php")
     suspend fun createDokter(@Body dokter: Dokter): Response<Void>
@@ -35,10 +35,9 @@ interface ServiceApiKlinik {
     @DELETE("dokter/delete.php")
     suspend fun deleteDokter(@Query("id") id: Int): Response<Void>
 
-
     // ---------------- PASIEN ----------------
     @GET("pasien/read.php")
-    suspend fun getPasien(): List<Pasien>
+    suspend fun getPasien(@Query("search") search: String? = null): List<Pasien>
 
     @POST("pasien/create.php")
     suspend fun createPasien(@Body pasien: Pasien): Response<Void>
@@ -52,7 +51,7 @@ interface ServiceApiKlinik {
 
     // ---------------- JANJI TEMU ----------------
     @GET("janji/read.php")
-    suspend fun getJanjiTemu(): List<JanjiTemu>
+    suspend fun getJanjiTemu(@Query("search") search: String? = null): List<JanjiTemu>
 
     @POST("janji/create.php")
     suspend fun createJanjiTemu(@Body janji: JanjiTemu): Response<Void>
@@ -68,7 +67,7 @@ interface ServiceApiKlinik {
 
     // ---------------- TINDAKAN ----------------
     @GET("tindakan/read.php")
-    suspend fun getTindakan(): List<Tindakan>
+    suspend fun getTindakan(@Query("search") search: String? = null): List<Tindakan>
 
     @POST("tindakan/create.php")
     suspend fun createTindakan(@Body tindakan: Tindakan): Response<Void>
@@ -78,7 +77,6 @@ interface ServiceApiKlinik {
 
     @DELETE("tindakan/delete.php")
     suspend fun deleteTindakan(@Query("id") id: Int): Response<Void>
-
 
     // ================= REKAM MEDIS =================
     @GET("rekam_medis/read.php")

@@ -48,6 +48,20 @@ class AuthViewModel(
 
     // ================= REGISTER =================
     fun register(username: String, password: String, role: String) {
+        if (username.isBlank() || password.isBlank()) {
+            _message.value = "Username dan password wajib diisi"
+            return
+        }
+
+        if (role != "admin" && role != "dokter") {
+            _message.value = "Role harus 'admin' atau 'dokter'"
+            return
+        }
+
+        if (password.length < 6) {
+            _message.value = "Password minimal 6 karakter"
+            return
+        }
 
         viewModelScope.launch {
             try {
@@ -55,7 +69,13 @@ class AuthViewModel(
                 repository.register(username, password, role)
                 _message.value = "Registrasi berhasil"
             } catch (e: Exception) {
-                _message.value = "Registrasi gagal"
+                // Ambil pesan error dari API jika memungkinkan
+                val errorMsg = when {
+                    e.message?.contains("Username sudah digunakan") == true ->
+                        "Username sudah digunakan"
+                    else -> "Registrasi gagal"
+                }
+                _message.value = errorMsg
             } finally {
                 _loading.value = false
             }

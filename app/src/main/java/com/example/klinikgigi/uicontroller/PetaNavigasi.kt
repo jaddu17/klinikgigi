@@ -12,7 +12,22 @@ import androidx.navigation.navArgument
 import com.example.klinikgigi.uicontroller.route.*
 import com.example.klinikgigi.view.*
 import com.example.klinikgigi.view.dokter.DokterHomeScreen
+import com.example.klinikgigi.view.dokter.EditDokterScreen
+import com.example.klinikgigi.view.dokter.HalamanDokter
+import com.example.klinikgigi.view.dokter.HalamanEntryDokter
+import com.example.klinikgigi.view.janjitemu.AdminJanjiTemuScreen
+import com.example.klinikgigi.view.janjitemu.EditJanjiTemuScreen
+import com.example.klinikgigi.view.janjitemu.EntryJanjiTemuScreen
+import com.example.klinikgigi.view.pasien.EditPasienScreen
+import com.example.klinikgigi.view.pasien.EntryPasienScreen
+import com.example.klinikgigi.view.pasien.HalamanPasienScreen
+import com.example.klinikgigi.view.rekammedis.EditRekamMedisScreen
+import com.example.klinikgigi.view.rekammedis.EntryRekamMedisScreen
+import com.example.klinikgigi.view.rekammedis.HalamanRekamMedis
 import com.example.klinikgigi.view.route.DestinasiEditPasien
+import com.example.klinikgigi.view.tindakan.EditTindakanScreen
+import com.example.klinikgigi.view.tindakan.EntryTindakanScreen
+import com.example.klinikgigi.view.tindakan.HalamanTindakanScreen
 import com.example.klinikgigi.viewmodel.*
 import com.example.klinikgigi.viewmodel.provider.PenyediaViewModel
 
@@ -51,7 +66,6 @@ fun HostNavigasiKlinik(
         composable(DestinasiAdminHome.route) {
             val vm: DokterViewModel = viewModel(factory = PenyediaViewModel.Factory)
             AdminHomeScreen(
-                dokterViewModel = vm,
                 navigateToHalamanDokter = { navController.navigate(DestinasiDokter.route) },
                 navigateToHalamanPasien = { navController.navigate(DestinasiHalamanPasien.route) },
                 navigateToJanjiTemu = { navController.navigate(DestinasiAdminJanji.route) },
@@ -108,13 +122,29 @@ fun HostNavigasiKlinik(
             val vm: DokterViewModel = viewModel(factory = PenyediaViewModel.Factory)
             HalamanDokter(
                 viewModel = vm,
-                onTambah = { navController.navigate(DestinasiAddEditDokter.createRoute(null)) },
+                onTambah = { navController.navigate(DestinasiEntryDokter.route) },
                 onEdit = { id ->
                     navController.navigate("${DestinasiEditDokter.route}/$id")
                 },
                 onBack = { navController.popBackStack() }
             )
         }
+
+        composable(DestinasiEntryDokter.route) {
+            val vm: DokterViewModel =
+                viewModel(factory = PenyediaViewModel.Factory)
+
+            HalamanEntryDokter(
+                viewModel = vm,
+                onSelesai = {
+                    navController.popBackStack()
+                },
+                onKembali = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
 
         composable(
             route = DestinasiEditDokter.routeWithArgs,

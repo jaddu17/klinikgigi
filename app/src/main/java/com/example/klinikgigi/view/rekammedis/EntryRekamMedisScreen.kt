@@ -1,4 +1,4 @@
-package com.example.klinikgigi.view
+package com.example.klinikgigi.view.rekammedis
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.klinikgigi.modeldata.RekamMedis
@@ -71,7 +70,7 @@ fun EntryRekamMedisScreen(
 
             // ================= JANJI TEMU =================
             var expandJanji by remember { mutableStateOf(false) }
-            val selectedJanji = janjiList.firstOrNull { it.id == idJanji }
+            val selectedJanji = janjiList.firstOrNull { it.id_janji == idJanji }
 
             ExposedDropdownMenuBox(
                 expanded = expandJanji,
@@ -79,7 +78,7 @@ fun EntryRekamMedisScreen(
             ) {
                 OutlinedTextField(
                     value = selectedJanji?.let {
-                        "ID ${it.id} | ${it.tanggal_janji} ${it.jam_janji}"
+                        "ID ${it.id_janji} | ${it.tanggal_janji} ${it.jam_janji}"
                     } ?: "",
                     onValueChange = {},
                     readOnly = true,
@@ -97,10 +96,10 @@ fun EntryRekamMedisScreen(
                     janjiList.forEach { janji ->
                         DropdownMenuItem(
                             text = {
-                                Text("ID ${janji.id} | ${janji.tanggal_janji} ${janji.jam_janji}")
+                                Text("ID ${janji.id_janji} | ${janji.tanggal_janji} ${janji.jam_janji}")
                             },
                             onClick = {
-                                idJanji = janji.id
+                                idJanji = janji.id_janji
                                 expandJanji = false
                             }
                         )

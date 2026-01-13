@@ -35,6 +35,9 @@ class JanjiTemuViewModel(
     private val _status = MutableStateFlow<String?>(null)
     val status: StateFlow<String?> = _status
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
     // ======================
     // INIT
     // ======================
@@ -82,6 +85,25 @@ class JanjiTemuViewModel(
         }
     }
 
+    fun searchJanji(query: String) {
+        _searchQuery.value = query
+
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                _janjiList.value =
+                    if (query.isBlank()) {
+                        repository.getJanjiTemu().toList()   // 🔑 RESET DATA
+                    } else {
+                        repository.getJanjiTemu(query).toList()
+                    }
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+
     // ======================
     // LOAD PER ID (EDIT)
     // ======================
@@ -89,7 +111,7 @@ class JanjiTemuViewModel(
         viewModelScope.launch {
             _loading.value = true
             try {
-                val janji = repository.getJanjiTemu().find { it.id == id }
+                val janji = repository.getJanjiTemu().find { it.id_janji == id }
                 _selectedJanji.value = janji
                 if (janji == null) _status.value = "Janji tidak ditemukan"
             } catch (e: Exception) {

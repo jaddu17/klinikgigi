@@ -15,7 +15,8 @@ enum class StatusJanji {
 }
 @Serializable
 data class JanjiTemu(
-    val id: Int,
+    @SerialName("id")
+    val id_janji: Int,
     val id_dokter: Int,
     val id_pasien: Int,
     val tanggal_janji: String,

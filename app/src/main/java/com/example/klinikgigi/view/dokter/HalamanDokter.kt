@@ -1,4 +1,4 @@
-package com.example.klinikgigi.view
+package com.example.klinikgigi.view.dokter
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,12 +23,17 @@ fun HalamanDokter(
 ) {
     val dokterList by viewModel.dokterList.collectAsState()
     val loading by viewModel.loading.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState() // 🔍 Ambil query saat ini
+
+    // State untuk input TextField (agar tetap sinkron)
+    var textSearch by remember { mutableStateOf(searchQuery) }
 
     // State untuk AlertDialog hapus
     var dokterYangAkanDihapus by remember { mutableStateOf<Dokter?>(null) }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadDokter()
+    // Sinkronisasi perubahan input ke ViewModel
+    LaunchedEffect(textSearch) {
+        viewModel.setSearchQuery(textSearch)
     }
 
     Scaffold(
@@ -49,32 +54,52 @@ fun HalamanDokter(
         }
     ) { padding ->
 
-        when {
-            loading -> Box(
-                Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            // 🔍 Search Bar
+            OutlinedTextField(
+                value = textSearch,
+                onValueChange = { textSearch = it },
+                label = { Text("Cari dokter...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                singleLine = true
+            )
 
-            dokterList.isEmpty() -> Box(
-                Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { Text("Belum ada data dokter") }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            else -> LazyColumn(
-                Modifier.padding(padding).padding(16.dp)
-            ) {
-                items(dokterList) { dokter ->
-                    DokterItem(
-                        dokter = dokter,
-                        onEdit = {
-                            dokter.id_dokter?.let { id ->
-                                onEdit(id)
+            // Konten utama: loading, kosong, atau daftar
+            when {
+                loading -> Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) { CircularProgressIndicator() }
+
+                dokterList.isEmpty() -> Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) { Text("Belum ada data dokter") }
+
+                else -> LazyColumn(
+                    Modifier.padding(horizontal = 16.dp)
+                ) {
+                    items(dokterList) { dokter ->
+                        DokterItem(
+                            dokter = dokter,
+                            onEdit = {
+                                dokter.id_dokter?.let { id ->
+                                    onEdit(id)
+                                }
+                            },
+                            onDelete = {
+                                dokterYangAkanDihapus = dokter
                             }
-                        },
-                        onDelete = {
-                            dokterYangAkanDihapus = dokter // simpan dokter, bukan hanya ID
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

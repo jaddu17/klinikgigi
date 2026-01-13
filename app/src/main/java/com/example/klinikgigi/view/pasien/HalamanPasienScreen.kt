@@ -1,4 +1,4 @@
-package com.example.klinikgigi.view
+package com.example.klinikgigi.view.pasien
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,13 +25,9 @@ fun HalamanPasienScreen(
 ) {
     val pasienList by pasienViewModel.pasienList.collectAsState()
     val loading by pasienViewModel.loading.collectAsState()
+    val searchQuery by pasienViewModel.searchQuery.collectAsState()
 
-    // State untuk AlertDialog hapus
     var pasienYangAkanDihapus by remember { mutableStateOf<Pasien?>(null) }
-
-    LaunchedEffect(Unit) {
-        pasienViewModel.loadPasien()
-    }
 
     Scaffold(
         topBar = {
@@ -56,6 +53,21 @@ fun HalamanPasienScreen(
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
+
+            // 🔍 SEARCH BAR PASIEN
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { pasienViewModel.updateSearchQuery(it) },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Cari pasien berdasarkan nama") },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                },
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             if (loading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -64,29 +76,39 @@ fun HalamanPasienScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(pasienList) { pasien ->
-                        PasienItem(
-                            pasien = pasien,
-                            onEdit = {
-                                pasien.id_pasien?.let { id ->
-                                    navigateToEditPasien(id)
+
+                if (pasienList.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Data pasien tidak ditemukan")
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(pasienList) { pasien ->
+                            PasienItem(
+                                pasien = pasien,
+                                onEdit = {
+                                    pasien.id_pasien?.let { id ->
+                                        navigateToEditPasien(id)
+                                    }
+                                },
+                                onDelete = {
+                                    pasienYangAkanDihapus = pasien
                                 }
-                            },
-                            onDelete = {
-                                pasienYangAkanDihapus = pasien // simpan objek pasien
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    // 💥 AlertDialog Konfirmasi Hapus
+    // 🗑️ DIALOG KONFIRMASI HAPUS
     pasienYangAkanDihapus?.let { pasien ->
         AlertDialog(
             onDismissRequest = { pasienYangAkanDihapus = null },

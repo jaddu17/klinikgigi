@@ -1,4 +1,4 @@
-package com.example.klinikgigi.view
+package com.example.klinikgigi.view.janjitemu
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.clickable
@@ -274,7 +274,7 @@ fun EditJanjiTemuScreen(
                         jam.isNotBlank(),
                 onClick = {
                     val updated = JanjiTemu(
-                        id = selectedJanji!!.id,
+                        id_janji = selectedJanji!!.id_janji,
                         id_dokter = selectedDokterId!!,
                         id_pasien = selectedPasienId!!,
                         tanggal_janji = tanggal,

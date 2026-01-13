@@ -1,10 +1,11 @@
-package com.example.klinikgigi.view
+package com.example.klinikgigi.view.tindakan
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,11 +24,9 @@ fun HalamanTindakanScreen(
 ) {
     val tindakanList by viewModel.tindakanList.collectAsState()
     val loading by viewModel.loading.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
-    // State untuk AlertDialog hapus
     var tindakanYangAkanDihapus by remember { mutableStateOf<Tindakan?>(null) }
-
-    LaunchedEffect(Unit) { viewModel.loadTindakan() }
 
     Scaffold(
         topBar = {
@@ -46,40 +45,59 @@ fun HalamanTindakanScreen(
             }
         }
     ) { padding ->
-        when {
-            loading -> Box(
-                Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
 
-            tindakanList.isEmpty() -> Box(
-                Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Belum ada data tindakan")
-            }
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+                .fillMaxSize()
+        ) {
 
-            else -> LazyColumn(
-                Modifier
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
-                items(tindakanList) { tindakan ->
-                    tindakan.id_tindakan?.let { id ->
-                        TindakanItem(
-                            tindakan = tindakan,
-                            onEdit = { onEdit(id) },
-                            onDelete = { tindakanYangAkanDihapus = tindakan } // simpan tindakan, bukan hanya ID
-                        )
+            // 🔍 SEARCH BAR
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.updateSearchQuery(it) },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Cari tindakan berdasarkan nama") },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                },
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            when {
+                loading -> Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+
+                tindakanList.isEmpty() -> Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Data tindakan tidak ditemukan")
+                }
+
+                else -> LazyColumn {
+                    items(tindakanList) { tindakan ->
+                        tindakan.id_tindakan?.let { id ->
+                            TindakanItem(
+                                tindakan = tindakan,
+                                onEdit = { onEdit(id) },
+                                onDelete = { tindakanYangAkanDihapus = tindakan }
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    // 💥 AlertDialog Konfirmasi Hapus
+    // 🗑️ KONFIRMASI HAPUS
     tindakanYangAkanDihapus?.let { tindakan ->
         AlertDialog(
             onDismissRequest = { tindakanYangAkanDihapus = null },
@@ -88,14 +106,10 @@ fun HalamanTindakanScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        tindakan.id_tindakan?.let { id ->
-                            viewModel.deleteTindakan(id)
-                        }
+                        tindakan.id_tindakan?.let { viewModel.deleteTindakan(it) }
                         tindakanYangAkanDihapus = null
                     }
-                ) {
-                    Text("Ya")
-                }
+                ) { Text("Ya") }
             },
             dismissButton = {
                 TextButton(onClick = { tindakanYangAkanDihapus = null }) {
@@ -113,24 +127,33 @@ fun TindakanItem(
     onDelete: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text("Nama: ${tindakan.nama_tindakan}")
+            Text(
+                text = tindakan.nama_tindakan,
+                style = MaterialTheme.typography.titleMedium
+            )
             Text("Harga: Rp ${tindakan.harga}")
             Text("Deskripsi: ${tindakan.deskripsi}")
 
             Row(
-                Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onEdit) { Text("Edit") }
-                Spacer(Modifier.width(8.dp))
-                TextButton(onClick = onDelete) { Text("Hapus") }
+                TextButton(onClick = onEdit) {
+                    Text("Edit")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(onClick = onDelete) {
+                    Text("Hapus")
+                }
             }
         }
     }

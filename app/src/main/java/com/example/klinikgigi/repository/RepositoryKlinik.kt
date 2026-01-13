@@ -16,12 +16,14 @@ interface RepositoryKlinik {
 
     // ---------------- Dokter ----------------
     suspend fun getDokter(): List<Dokter>
+    suspend fun getDokter(searchQuery: String? = null): List<Dokter>
     suspend fun createDokter(dokter: Dokter): Response<Void>
     suspend fun updateDokter(dokter: Dokter): Response<Void>
     suspend fun deleteDokter(id: Int): Response<Void>
 
     // ---------------- Pasien ----------------
     suspend fun getPasien(): List<Pasien>
+    suspend fun getPasien(searchQuery: String? = null): List<Pasien>
     suspend fun createPasien(pasien: Pasien): Response<Void>
     suspend fun updatePasien(pasien: Pasien): Response<Void>
     suspend fun deletePasien(id: Int): Response<Void>
@@ -31,12 +33,14 @@ interface RepositoryKlinik {
     suspend fun createJanjiTemu(janji: JanjiTemu): Response<Void>
     suspend fun updateJanjiTemu(janji: JanjiTemu): Response<Void>
     suspend fun deleteJanjiTemu(id: Int): Response<Void>
+    suspend fun getJanjiTemu(searchQuery: String? = null): List<JanjiTemu>
+
     // ---------------- Janji Temu (Grouped) ----------------
     suspend fun getJanjiTemuPerDokter(): List<JanjiTemuPerDokter>
 
-
     // ---------------- Tindakan ----------------
     suspend fun getTindakan(): List<Tindakan>
+    suspend fun getTindakan(searchQuery: String? = null): List<Tindakan>
     suspend fun createTindakan(tindakan: Tindakan): Response<Void>
     suspend fun updateTindakan(tindakan: Tindakan): Response<Void>
     suspend fun deleteTindakan(id: Int): Response<Void>
@@ -49,7 +53,7 @@ interface RepositoryKlinik {
 }
 
 /**
- * Repository implementation
+ * Implementasi Repository
  */
 class JaringanRepositoryKlinik(
     private val api: ServiceApiKlinik
@@ -58,6 +62,9 @@ class JaringanRepositoryKlinik(
     // ---------------- Dokter ----------------
     override suspend fun getDokter(): List<Dokter> =
         api.getDokter()
+
+    override suspend fun getDokter(searchQuery: String?): List<Dokter> =
+        api.getDokter(searchQuery)
 
     override suspend fun createDokter(dokter: Dokter): Response<Void> =
         api.createDokter(dokter)
@@ -71,6 +78,9 @@ class JaringanRepositoryKlinik(
     // ---------------- Pasien ----------------
     override suspend fun getPasien(): List<Pasien> =
         api.getPasien()
+
+    override suspend fun getPasien(searchQuery: String?): List<Pasien> =
+        api.getPasien(searchQuery)
 
     override suspend fun createPasien(pasien: Pasien): Response<Void> =
         api.createPasien(pasien)
@@ -97,9 +107,15 @@ class JaringanRepositoryKlinik(
     override suspend fun getJanjiTemuPerDokter(): List<JanjiTemuPerDokter> =
         api.getJanjiTemuPerDokter()
 
+    override suspend fun getJanjiTemu(searchQuery: String?): List<JanjiTemu> =
+        api.getJanjiTemu(searchQuery)
+
     // ---------------- Tindakan ----------------
     override suspend fun getTindakan(): List<Tindakan> =
         api.getTindakan()
+
+    override suspend fun getTindakan(searchQuery: String?): List<Tindakan> =
+        api.getTindakan(searchQuery)
 
     override suspend fun createTindakan(tindakan: Tindakan): Response<Void> =
         api.createTindakan(tindakan)
@@ -109,6 +125,7 @@ class JaringanRepositoryKlinik(
 
     override suspend fun deleteTindakan(id: Int): Response<Void> =
         api.deleteTindakan(id)
+
 
     // ---------------- Rekam Medis ----------------
     override suspend fun getRekamMedis(): List<RekamMedis> =

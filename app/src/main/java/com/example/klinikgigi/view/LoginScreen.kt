@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.klinikgigi.viewmodel.AuthViewModel
 import com.example.klinikgigi.uicontroller.route.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,29 +26,43 @@ fun LoginScreen(
     val loading by viewModel.loading.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    // ================= HANDLE LOGIN RESULT =================
+    // 🔑 State untuk error form (di bawah password)
+    var loginError by remember { mutableStateOf<String?>(null) }
+
+    // Reset error saat user mengetik ulang
+    LaunchedEffect(username, password) {
+        loginError = null
+    }
+
     LaunchedEffect(user, message) {
+        // Simpan ke variabel lokal
+        val currentUser = user
+        val currentMessage = message
 
-        // ❌ Jika gagal login
-        message?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearMessage()
-        }
-
-        // ✅ Jika login sukses
-        user?.let { loggedUser ->
-            val targetRoute = when (loggedUser.role.lowercase()) {
+        // ✅ Jika login SUKSES
+        if (currentUser != null) {
+            loginError = null
+            val targetRoute = when (currentUser.role.lowercase()) {
                 "admin" -> DestinasiAdminHome.route
                 "dokter" -> DestinasiDokterHome.route
-                else -> DestinasiLogin.route // fallback aman
+                else -> DestinasiLogin.route
             }
-
             navController.navigate(targetRoute) {
-                // clear seluruh back stack supaya back button tidak kembali ke login
                 popUpTo(0) { inclusive = true }
             }
-
+            viewModel.clearMessage()
+        }
+        // ❌ Jika ada PESAN ERROR
+        else if (currentMessage != null) {
+            if (currentMessage == "Username dan password wajib diisi") {
+                scope.launch {
+                    snackbarHostState.showSnackbar(currentMessage)
+                }
+            } else {
+                loginError = "Username atau password salah"
+            }
             viewModel.clearMessage()
         }
     }
@@ -55,27 +70,23 @@ fun LoginScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
             contentAlignment = Alignment.Center
         ) {
-
             Column(
                 modifier = Modifier
                     .padding(24.dp)
                     .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-
                 Text(
                     text = "Login",
                     style = MaterialTheme.typography.headlineMedium
                 )
-
-                Spacer(Modifier.height(20.dp))
 
                 OutlinedTextField(
                     value = username,
@@ -84,22 +95,31 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(Modifier.height(8.dp))
-
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation()
+                    isError = loginError != null,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                // 👇 Tampilkan error hanya jika ada dan tidak loading
+                if (!loading && loginError != null) {
+                    Text(
+                        text = loginError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier
+                            .padding(start = 16.dp, top = 4.dp)
+                            .fillMaxWidth()
+                    )
+                }
 
                 Button(
                     onClick = { viewModel.login(username, password) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !loading
+                    enabled = !loading && username.isNotBlank() && password.isNotBlank()
                 ) {
                     if (loading) {
                         CircularProgressIndicator(
@@ -111,8 +131,6 @@ fun LoginScreen(
                         Text("Login")
                     }
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(
                     onClick = { navController.navigate(DestinasiRegister.route) }

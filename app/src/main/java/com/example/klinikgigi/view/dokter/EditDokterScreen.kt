@@ -1,4 +1,4 @@
-package com.example.klinikgigi.view
+package com.example.klinikgigi.view.dokter
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -8,41 +8,42 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.klinikgigi.modeldata.Tindakan
-import com.example.klinikgigi.viewmodel.TindakanViewModel
+import com.example.klinikgigi.viewmodel.DokterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditTindakanScreen(
-    tindakanId: Int,
-    viewModel: TindakanViewModel,
+fun EditDokterScreen(
+    dokterId: Int,
+    viewModel: DokterViewModel,
     onBack: () -> Unit
 ) {
-    // Load data berdasarkan ID
-    LaunchedEffect(tindakanId) {
-        viewModel.loadTindakanById(tindakanId)
+    // Pastikan data dokter sudah ada
+    LaunchedEffect(Unit) {
+        viewModel.loadDokter()
     }
 
-    // State
-    val tindakan by viewModel.selectedTindakan.collectAsState()
+    val dokterList by viewModel.dokterList.collectAsState()
+
+    // Cari dokter berdasarkan ID
+    val dokter = dokterList.find { it.id_dokter == dokterId }
 
     var nama by remember { mutableStateOf("") }
-    var deskripsi by remember { mutableStateOf("") }
-    var harga by remember { mutableStateOf("") }
+    var spesialis by remember { mutableStateOf("") }
+    var telepon by remember { mutableStateOf("") }
 
-    // Ketika data dari viewmodel masuk → isi form
-    LaunchedEffect(tindakan) {
-        tindakan?.let {
-            nama = it.nama_tindakan
-            deskripsi = it.deskripsi
-            harga = it.harga
+    // Saat data dokter sudah ditemukan → isi form
+    LaunchedEffect(dokter) {
+        dokter?.let {
+            nama = it.nama_dokter
+            spesialis = it.spesialisasi
+            telepon = it.nomor_telepon
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Tindakan") },
+                title = { Text("Edit Dokter") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -52,11 +53,9 @@ fun EditTindakanScreen(
         }
     ) { padding ->
 
-        if (tindakan == null) {
+        if (dokter == null) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -68,40 +67,38 @@ fun EditTindakanScreen(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
             OutlinedTextField(
                 value = nama,
                 onValueChange = { nama = it },
-                label = { Text("Nama Tindakan") },
+                label = { Text("Nama Dokter") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
-                value = deskripsi,
-                onValueChange = { deskripsi = it },
-                label = { Text("Deskripsi") },
+                value = spesialis,
+                onValueChange = { spesialis = it },
+                label = { Text("Spesialisasi") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
-                value = harga,
-                onValueChange = { harga = it },
-                label = { Text("harga") },
+                value = telepon,
+                onValueChange = { telepon = it },
+                label = { Text("Nomor Telepon") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Button(
                 onClick = {
-                    val updated = Tindakan(
-                        id_tindakan = tindakanId,
-                        nama_tindakan = nama,
-                        deskripsi = deskripsi,
-                        harga = harga
+                    val updated = dokter.copy(
+                        nama_dokter = nama,
+                        spesialisasi = spesialis,
+                        nomor_telepon = telepon
                     )
-
-                    viewModel.updateTindakan(updated)
+                    viewModel.updateDokter(updated)
                     onBack()
                 },
                 modifier = Modifier.fillMaxWidth()
