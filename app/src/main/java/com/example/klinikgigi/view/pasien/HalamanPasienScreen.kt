@@ -29,6 +29,10 @@ fun HalamanPasienScreen(
 
     var pasienYangAkanDihapus by remember { mutableStateOf<Pasien?>(null) }
 
+    LaunchedEffect(Unit) {
+        pasienViewModel.loadPasien()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

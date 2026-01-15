@@ -50,6 +50,7 @@ interface RepositoryKlinik {
     suspend fun createRekamMedis(rekamMedis: RekamMedis): Response<Void>
     suspend fun updateRekamMedis(rekamMedis: RekamMedis): Response<Void>
     suspend fun deleteRekamMedis(id: Int): Response<Void>
+    suspend fun getRekamMedisByJanji(idJanji: Int): List<RekamMedis>
 }
 
 /**
@@ -139,4 +140,7 @@ class JaringanRepositoryKlinik(
 
     override suspend fun deleteRekamMedis(id: Int): Response<Void> =
         api.deleteRekamMedis(id)
+
+    override suspend fun getRekamMedisByJanji(idJanji: Int): List<RekamMedis> =
+        api.getRekamMedis()
 }

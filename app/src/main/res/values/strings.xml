@@ -23,4 +23,5 @@
         <string name="entry_rekam_medis">Entry Rekam Medis</string>
         <string name="edit_rekam_medis">Edit Rekam Medis</string>
         <string name="rekam_medis_dokter">Rekam Medis (Dokter)</string>
+        <string name="rekam_medis_detail">Detail Rekam Medis</string>
 </resources>

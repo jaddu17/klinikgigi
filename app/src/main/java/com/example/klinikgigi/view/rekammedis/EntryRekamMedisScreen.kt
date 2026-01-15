@@ -17,29 +17,26 @@ import com.example.klinikgigi.viewmodel.RekamMedisViewModel
 fun EntryRekamMedisScreen(
     viewModel: RekamMedisViewModel,
     rekamMedisId: Int?,
-    idJanji: Int?,
+    idJanji: Int, // 🔒 WAJIB & TIDAK BISA DIUBAH
     navigateBack: () -> Unit
 ) {
 
     LaunchedEffect(rekamMedisId) {
         rekamMedisId?.let { viewModel.loadRekamMedisById(it) }
-        viewModel.loadJanjiTemu()
         viewModel.loadTindakan()
     }
 
     val rekamMedis by viewModel.selectedRekamMedis.collectAsState()
-    val janjiList by viewModel.janjiList.collectAsState()
     val tindakanList by viewModel.tindakanList.collectAsState()
 
-    var idJanji by remember { mutableStateOf<Int?>(null) }
     var idTindakan by remember { mutableStateOf<Int?>(null) }
     var diagnosa by remember { mutableStateOf("") }
     var catatan by remember { mutableStateOf("") }
     var resep by remember { mutableStateOf("") }
 
+    // 🔁 Mode edit
     LaunchedEffect(rekamMedis) {
         rekamMedis?.let {
-            idJanji = it.id_janji
             idTindakan = it.id_tindakan
             diagnosa = it.diagnosa
             catatan = it.catatan
@@ -50,7 +47,14 @@ fun EntryRekamMedisScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (rekamMedisId == null) "Tambah Rekam Medis" else "Edit Rekam Medis") },
+                title = {
+                    Text(
+                        if (rekamMedisId == null)
+                            "Tambah Rekam Medis"
+                        else
+                            "Edit Rekam Medis"
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, null)
@@ -68,48 +72,20 @@ fun EntryRekamMedisScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-            // ================= JANJI TEMU =================
-            var expandJanji by remember { mutableStateOf(false) }
-            val selectedJanji = janjiList.firstOrNull { it.id_janji == idJanji }
-
-            ExposedDropdownMenuBox(
-                expanded = expandJanji,
-                onExpandedChange = { expandJanji = !expandJanji }
-            ) {
-                OutlinedTextField(
-                    value = selectedJanji?.let {
-                        "ID ${it.id_janji} | ${it.tanggal_janji} ${it.jam_janji}"
-                    } ?: "",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Janji Temu") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expandJanji)
-                    },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = expandJanji,
-                    onDismissRequest = { expandJanji = false }
-                ) {
-                    janjiList.forEach { janji ->
-                        DropdownMenuItem(
-                            text = {
-                                Text("ID ${janji.id_janji} | ${janji.tanggal_janji} ${janji.jam_janji}")
-                            },
-                            onClick = {
-                                idJanji = janji.id_janji
-                                expandJanji = false
-                            }
-                        )
-                    }
-                }
-            }
+            // ================= JANJI (LOCKED) =================
+            OutlinedTextField(
+                value = "ID Janji: $idJanji",
+                onValueChange = {},
+                label = { Text("Janji Temu") },
+                enabled = false,
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             // ================= TINDAKAN =================
             var expandTindakan by remember { mutableStateOf(false) }
-            val selectedTindakan = tindakanList.firstOrNull { it.id_tindakan == idTindakan }
+            val selectedTindakan =
+                tindakanList.firstOrNull { it.id_tindakan == idTindakan }
 
             ExposedDropdownMenuBox(
                 expanded = expandTindakan,
@@ -120,7 +96,12 @@ fun EntryRekamMedisScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Tindakan") },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expandTindakan)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
 
                 ExposedDropdownMenu(
@@ -162,11 +143,11 @@ fun EntryRekamMedisScreen(
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                enabled = idJanji != null && idTindakan != null && diagnosa.isNotBlank(),
+                enabled = idTindakan != null && diagnosa.isNotBlank(),
                 onClick = {
                     val rm = RekamMedis(
                         id_rekam = rekamMedisId ?: 0,
-                        id_janji = idJanji!!,
+                        id_janji = idJanji, // 🔥 AUTO
                         id_tindakan = idTindakan!!,
                         diagnosa = diagnosa,
                         catatan = catatan,

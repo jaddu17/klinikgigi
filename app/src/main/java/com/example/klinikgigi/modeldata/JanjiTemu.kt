@@ -23,5 +23,7 @@ data class JanjiTemu(
     val jam_janji: String,
     val keluhan: String,
     val status: StatusJanji,
-    val nama_pasien: String? = "-"
+    val nama_pasien: String? = "-",
+
+    val sudah_ada_rekam_medis: Boolean = false
 )

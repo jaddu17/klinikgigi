@@ -1,3 +1,4 @@
+
 package com.example.klinikgigi.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -55,6 +56,30 @@ class RekamMedisViewModel(
 
     // alias error
     val errorMessage: StateFlow<String?> = status
+
+    private val _idJanji = MutableStateFlow<Int?>(null)
+    val idJanji: StateFlow<Int?> = _idJanji
+
+    fun setIdJanji(id: Int) {
+        _idJanji.value = id
+        loadRekamMedisByJanji(id)
+    }
+
+    fun loadRekamMedisByJanji(idJanji: Int) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val data = repository.getRekamMedis()
+                _rekamMedisList.value =
+                    data.filter { it.id_janji == idJanji }
+            } catch (e: Exception) {
+                _status.value = "Gagal memuat rekam medis"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
 
     // alias function
     fun getAllRekamMedis() {

@@ -24,6 +24,7 @@ import com.example.klinikgigi.view.pasien.HalamanPasienScreen
 import com.example.klinikgigi.view.rekammedis.EditRekamMedisScreen
 import com.example.klinikgigi.view.rekammedis.EntryRekamMedisScreen
 import com.example.klinikgigi.view.rekammedis.HalamanRekamMedis
+import com.example.klinikgigi.view.rekammedis.RekamMedisByJanjiScreen
 import com.example.klinikgigi.view.route.DestinasiEditPasien
 import com.example.klinikgigi.view.tindakan.EditTindakanScreen
 import com.example.klinikgigi.view.tindakan.EntryTindakanScreen
@@ -190,21 +191,42 @@ fun HostNavigasiKlinik(
 
         // ================= JANJI TEMU =================
         composable(DestinasiAdminJanji.route) {
-            val vm: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
+            val vm: JanjiTemuViewModel =
+                viewModel(factory = PenyediaViewModel.Factory)
+
             AdminJanjiTemuScreen(
                 viewModel = vm,
-                navigateToAdd = { navController.navigate(DestinasiEntryJanji.route) },
-                navigateToEdit = { id ->
-                    navController.navigate("${DestinasiEditJanjiTemu.route}/$id")
+
+                navigateToAdd = {
+                    navController.navigate(DestinasiEntryJanji.route)
                 },
-                navigateToRekamMedis = { idJanji ->
+
+                navigateToEdit = { idJanji ->
+                    navController.navigate(
+                        "${DestinasiEditJanjiTemu.route}/$idJanji"
+                    )
+                },
+
+                // ➕ TAMBAH REKAM MEDIS (BELUM ADA)
+                navigateToEntryRekamMedis = { idJanji ->
                     navController.navigate(
                         DestinasiEntryRekamMedis.createRoute(idJanji)
                     )
                 },
-                navigateBack = { navController.popBackStack() }
+
+                // 👁️ LIHAT REKAM MEDIS (SUDAH ADA)
+                navigateToLihatRekamMedis = { idJanji ->
+                    navController.navigate(
+                        DestinasiRekamMedisByJanji.createRoute(idJanji)
+                    )
+                },
+
+                navigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
+
 
         composable(DestinasiEntryJanji.route) {
             val vm: JanjiTemuViewModel = viewModel(factory = PenyediaViewModel.Factory)
@@ -265,16 +287,30 @@ fun HostNavigasiKlinik(
 
         composable(
             route = DestinasiEntryRekamMedis.route,
-            arguments = listOf(navArgument("idJanji") {
-                type = NavType.IntType
-            })
-        ) {
-            val idJanji = it.arguments!!.getInt("idJanji")
-            val vm: RekamMedisViewModel = viewModel(factory = PenyediaViewModel.Factory)
-            EntryRekamMedisScreen(vm, null, idJanji) {
-                navController.popBackStack()
-            }
+            arguments = listOf(
+                navArgument(DestinasiEntryRekamMedis.idJanjiArg) {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+
+            val idJanji =
+                backStackEntry.arguments!!
+                    .getInt(DestinasiEntryRekamMedis.idJanjiArg)
+
+            val vm: RekamMedisViewModel =
+                viewModel(factory = PenyediaViewModel.Factory)
+
+            EntryRekamMedisScreen(
+                viewModel = vm,
+                rekamMedisId = null,
+                idJanji = idJanji,
+                navigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
+
 
         composable(
             route = DestinasiEditRekamMedis.route,
@@ -287,6 +323,36 @@ fun HostNavigasiKlinik(
             EditRekamMedisScreen(vm, id) {
                 navController.popBackStack()
             }
+        }
+
+        composable(
+            route = "${DestinasiRekamMedisByJanji.route}/{${DestinasiRekamMedisByJanji.ID_JANJI}}",
+            arguments = listOf(
+                navArgument(DestinasiRekamMedisByJanji.ID_JANJI) {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+
+            val idJanji =
+                backStackEntry.arguments
+                    ?.getInt(DestinasiRekamMedisByJanji.ID_JANJI)
+                    ?: return@composable
+
+            // ✅ AMBIL INSTANCE VIEWMODEL
+            val vm: RekamMedisViewModel =
+                viewModel(factory = PenyediaViewModel.Factory)
+
+            RekamMedisByJanjiScreen(
+                idJanji = idJanji,
+                viewModel = vm, // ✅ BENAR
+                navigateBack = { navController.popBackStack() },
+                navigateToEdit = { idRekam ->
+                    navController.navigate(
+                        DestinasiEditRekamMedis.createRoute(idRekam)
+                    )
+                }
+            )
         }
     }
 }
