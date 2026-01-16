@@ -115,42 +115,27 @@ fun HostNavigasiKlinik(
 
 // ================= DETAIL JANJI TEMU =================
         composable(
-            route = "dokter_janji_temu/{idDokter}",
-            arguments = listOf(navArgument("idDokter") { type = NavType.IntType })
+            route = DestinasiDokterJanji.routeWithArgs,
+            arguments = listOf(navArgument(DestinasiDokterJanji.idDokterArg) {
+                type = NavType.IntType
+            })
         ) { backStackEntry ->
-            val idDokter = backStackEntry.arguments?.getInt("idDokter") ?: run {
-                navController.popBackStack()
-                return@composable
-            }
+            val idDokter =
+                backStackEntry.arguments!!.getInt(DestinasiDokterJanji.idDokterArg)
 
             val vm: DokterDashboardViewModel = viewModel(factory = PenyediaViewModel.Factory)
-            LaunchedEffect(idDokter) {
-                vm.loadJanjiTemuByDokterId(idDokter)
-            }
 
-            val dokter by vm.selectedDokter.collectAsState()
-            val loading by vm.isLoading.collectAsState()
-            val error by vm.errorMessage.collectAsState()
-
-            when {
-                loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+            JanjiTemuDokterScreen(
+                idDokter = idDokter,
+                viewModel = vm,
+                onBack = { navController.popBackStack() },
+                onLihatRekamMedis = { idJanji ->
+                    navController.navigate(DestinasiRekamMedisByJanji.createRoute(idJanji))
+                },
+                onTambahRekamMedis = { idJanji ->
+                    navController.navigate(DestinasiEntryRekamMedis.createRoute(idJanji))
                 }
-                error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(error!!)
-                }
-                else -> dokter?.let { safeDokter ->
-                    JanjiTemuDokterScreen(
-                        dokter = safeDokter,
-                        onBack = { navController.popBackStack() },
-                        onLihatRekamMedis = { idJanji ->
-                            navController.navigate(DestinasiRekamMedisByJanji.createRoute(idJanji))
-                        }
-                    )
-                } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Data tidak tersedia")
-                }
-            }
+            )
         }
 
         composable(DestinasiRekamMedisDokter.route) {
@@ -246,27 +231,21 @@ fun HostNavigasiKlinik(
                 navigateToAdd = {
                     navController.navigate(DestinasiEntryJanji.route)
                 },
-
                 navigateToEdit = { idJanji ->
                     navController.navigate(
                         "${DestinasiEditJanjiTemu.route}/$idJanji"
                     )
                 },
-
-                // ➕ TAMBAH REKAM MEDIS (BELUM ADA)
                 navigateToEntryRekamMedis = { idJanji ->
                     navController.navigate(
                         DestinasiEntryRekamMedis.createRoute(idJanji)
                     )
                 },
-
-                // 👁️ LIHAT REKAM MEDIS (SUDAH ADA)
                 navigateToLihatRekamMedis = { idJanji ->
                     navController.navigate(
                         DestinasiRekamMedisByJanji.createRoute(idJanji)
                     )
                 },
-
                 navigateBack = {
                     navController.popBackStack()
                 }
@@ -385,13 +364,12 @@ fun HostNavigasiKlinik(
                     ?.getInt(DestinasiRekamMedisByJanji.ID_JANJI)
                     ?: return@composable
 
-            // ✅ AMBIL INSTANCE VIEWMODEL
             val vm: RekamMedisViewModel =
                 viewModel(factory = PenyediaViewModel.Factory)
 
             RekamMedisByJanjiScreen(
                 idJanji = idJanji,
-                viewModel = vm, // ✅ BENAR
+                viewModel = vm, //
                 navigateBack = { navController.popBackStack() },
                 navigateToEdit = { idRekam ->
                     navController.navigate(

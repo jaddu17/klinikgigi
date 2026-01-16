@@ -43,12 +43,55 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.klinikgigi.modeldata.JanjiTemuPerDokter
 
-@OptIn(ExperimentalMaterial3Api::class)
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.CircularProgressIndicator
+import com.example.klinikgigi.viewmodel.DokterDashboardViewModel
+
 @Composable
 fun JanjiTemuDokterScreen(
+    idDokter: Int,
+    viewModel: DokterDashboardViewModel,
+    onBack: () -> Unit,
+    onLihatRekamMedis: (Int) -> Unit,
+    onTambahRekamMedis: (Int) -> Unit
+) {
+    LaunchedEffect(idDokter) {
+        viewModel.loadJanjiTemuByDokterId(idDokter)
+    }
+
+    val dokter by viewModel.selectedDokter.collectAsState()
+    val loading by viewModel.isLoading.collectAsState()
+    val error by viewModel.errorMessage.collectAsState()
+
+    when {
+        loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(error!!)
+        }
+        else -> dokter?.let { safeDokter ->
+            JanjiTemuDokterContent(
+                dokter = safeDokter,
+                onBack = onBack,
+                onLihatRekamMedis = onLihatRekamMedis,
+                onTambahRekamMedis = onTambahRekamMedis
+            )
+        } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Data tidak tersedia")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun JanjiTemuDokterContent(
     dokter: JanjiTemuPerDokter,
     onBack: () -> Unit,
-    onLihatRekamMedis: (Int) -> Unit
+    onLihatRekamMedis: (Int) -> Unit,
+    onTambahRekamMedis: (Int) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -140,11 +183,28 @@ fun JanjiTemuDokterScreen(
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Text(
-                                        text = "Pasien",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.outline
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Pasien",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
+                                        if (janji.sudah_ada_rekam_medis) {
+                                            Spacer(Modifier.width(8.dp))
+                                            Surface(
+                                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                                shape = RoundedCornerShape(4.dp)
+                                            ) {
+                                                Text(
+                                                    text = "Sudah Periksa",
+                                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -186,21 +246,40 @@ fun JanjiTemuDokterScreen(
                             Spacer(modifier = Modifier.height(4.dp))
                             
                             // Action Button
-                            Button(
-                                onClick = { onLihatRekamMedis(janji.id_janji) },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                Icon(
-                                    Icons.Default.MedicalServices, 
-                                    contentDescription = null, 
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text("Lihat Rekam Medis")
+                            if (janji.sudah_ada_rekam_medis) {
+                                Button(
+                                    onClick = { onLihatRekamMedis(janji.id_janji) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary
+                                    )
+                                ) {
+                                    Icon(
+                                        Icons.Default.MedicalServices, 
+                                        contentDescription = null, 
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Lihat Rekam Medis")
+                                }
+                            } else {
+                                Button(
+                                    onClick = { onTambahRekamMedis(janji.id_janji) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.secondary
+                                    )
+                                ) {
+                                    Icon(
+                                        Icons.Default. MedicalServices, 
+                                        contentDescription = null, 
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Tambah Rekam Medis")
+                                }
                             }
                         }
                     }

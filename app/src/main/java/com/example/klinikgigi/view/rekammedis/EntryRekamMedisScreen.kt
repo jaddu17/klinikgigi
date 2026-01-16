@@ -38,6 +38,7 @@ fun EntryRekamMedisScreen(
     val rekamMedis by viewModel.selectedRekamMedis.collectAsState()
     val tindakanList by viewModel.tindakanList.collectAsState()
     val statusMsg by viewModel.status.collectAsState()
+    val success by viewModel.success.collectAsState()
 
     var idTindakan by remember { mutableStateOf<Int?>(null) }
     var diagnosa by remember { mutableStateOf("") }
@@ -60,12 +61,15 @@ fun EntryRekamMedisScreen(
     
     LaunchedEffect(statusMsg) {
         statusMsg?.let {
-             if (it.contains("berhasil", ignoreCase = true)) {
-                showSuccessDialog = true
-            } else {
-                scope.launch { snackbarHostState.showSnackbar(it) }
-            }
+            scope.launch { snackbarHostState.showSnackbar(it) }
             viewModel.clearStatus()
+        }
+    }
+
+    LaunchedEffect(success) {
+        if (success) {
+            showSuccessDialog = true
+            viewModel.clearSuccess()
         }
     }
 

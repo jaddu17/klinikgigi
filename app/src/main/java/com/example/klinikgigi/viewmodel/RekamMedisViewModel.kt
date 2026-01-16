@@ -61,9 +61,6 @@ class RekamMedisViewModel(
     // LOAD DATA
     // =======================
 
-    // alias list
-    val rekamMedis: StateFlow<List<RekamMedis>> = rekamMedisList
-
     // alias loading
     val isLoading: StateFlow<Boolean> = loading
 
@@ -72,11 +69,6 @@ class RekamMedisViewModel(
 
     private val _idJanji = MutableStateFlow<Int?>(null)
     val idJanji: StateFlow<Int?> = _idJanji
-
-    fun setIdJanji(id: Int) {
-        _idJanji.value = id
-        loadRekamMedisByJanji(id)
-    }
 
     fun loadRekamMedisByJanji(idJanji: Int) {
         viewModelScope.launch {
@@ -233,10 +225,6 @@ class RekamMedisViewModel(
 
     fun clearStatus() {
         _status.value = null
-    }
-
-    fun clearSelected() {
-        _selectedRekamMedis.value = null
     }
 
     fun clearSuccess() {

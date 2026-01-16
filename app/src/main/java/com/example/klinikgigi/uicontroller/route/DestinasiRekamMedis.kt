@@ -6,8 +6,4 @@ import com.example.klinikgigi.R
 object DestinasiRekamMedis : DestinasiNavigasi {
     override val route = "rekam_medis"
     override val titleRes = R.string.rekam_medis
-
-    fun createRoute(idJanji: Int): String {
-        return "entry_rekam_medis/$idJanji"
-    }
 }
