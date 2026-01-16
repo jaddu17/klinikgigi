@@ -20,6 +20,15 @@ class AuthRepository(
         )
     }
 
+    suspend fun checkUsernameExists(username: String): Boolean {
+        return try {
+            val response = api.checkUsername(mapOf("username" to username))
+            response["exists"] as? Boolean ?: false
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     suspend fun register(username: String, password: String, role: String): User {
         val response: Response<User> = api.register(
             mapOf("username" to username, "password" to password, "role" to role)

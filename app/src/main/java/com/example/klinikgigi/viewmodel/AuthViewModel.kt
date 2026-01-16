@@ -66,6 +66,16 @@ class AuthViewModel(
         viewModelScope.launch {
             try {
                 _loading.value = true
+                
+                // Cek apakah username sudah ada
+                val usernameExists = repository.checkUsernameExists(username)
+                if (usernameExists) {
+                    _message.value = "Username sudah digunakan"
+                    _loading.value = false
+                    return@launch
+                }
+                
+                // Lanjutkan registrasi jika username tersedia
                 repository.register(username, password, role)
                 _message.value = "Registrasi berhasil"
             } catch (e: Exception) {

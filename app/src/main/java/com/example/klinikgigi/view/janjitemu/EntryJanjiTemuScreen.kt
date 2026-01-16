@@ -27,6 +27,7 @@ import com.example.klinikgigi.modeldata.JanjiTemu
 import com.example.klinikgigi.modeldata.StatusJanji
 import com.example.klinikgigi.viewmodel.JanjiTemuViewModel
 import kotlinx.coroutines.launch
+import android.app.TimePickerDialog
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,12 +51,12 @@ fun EntryJanjiTemuScreen(
     var status by remember { mutableStateOf(StatusJanji.MENUNGGU) }
     
     var showSuccessDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     val statusList = StatusJanji.values().toList()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
-    // Initialize logic
     LaunchedEffect(selectedJanji) {
         selectedJanji?.let {
             selectedDokterId = it.id_dokter
@@ -72,7 +73,8 @@ fun EntryJanjiTemuScreen(
             if (it.contains("berhasil", ignoreCase = true)) {
                 showSuccessDialog = true
             } else {
-                scope.launch { snackbarHostState.showSnackbar(it) }
+                errorMessage = it
+                showErrorDialog = true
             }
             viewModel.clearStatus()
         }
@@ -97,6 +99,21 @@ fun EntryJanjiTemuScreen(
         ).apply {
             datePicker.minDate = System.currentTimeMillis()
         }.show()
+    }
+
+    fun openTimePicker() {
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+
+        TimePickerDialog(
+            context,
+            { _, hour, minute ->
+                jam = "%02d:%02d".format(hour, minute)
+            },
+            currentHour,
+            currentMinute,
+            true // 24 hour format
+        ).show()
     }
 
     Scaffold(
@@ -193,11 +210,13 @@ fun EntryJanjiTemuScreen(
             // Jam
             OutlinedTextField(
                 value = jam,
-                onValueChange = { jam = it },
-                label = { Text("Jam (Contoh: 10:00)") },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Jam") },
                 leadingIcon = { Icon(Icons.Default.Schedule, null) },
+                trailingIcon = { IconButton(onClick = { openTimePicker() }) { Icon(Icons.Default.EditCalendar, null) } },
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().clickable { openTimePicker() }
             )
 
             // Keluhan
@@ -274,6 +293,22 @@ fun EntryJanjiTemuScreen(
                     showSuccessDialog = false
                     navigateBack()
                 }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("Gagal") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(
+                    onClick = { showErrorDialog = false }
+                ) {
                     Text("OK")
                 }
             }

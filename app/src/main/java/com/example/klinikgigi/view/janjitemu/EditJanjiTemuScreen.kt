@@ -81,7 +81,6 @@ fun EditJanjiTemuScreen(
         }
     }
 
-    // Change Detection
     val isChanged = selectedJanji?.let {
         it.id_dokter != selectedDokterId ||
         it.id_pasien != selectedPasienId ||

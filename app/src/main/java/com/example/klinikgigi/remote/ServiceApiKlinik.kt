@@ -22,6 +22,9 @@ interface ServiceApiKlinik {
     @POST("users/register.php")
     suspend fun register(@Body body: Map<String, String>): Response<User>
 
+    @POST("users/check_username.php")
+    suspend fun checkUsername(@Body body: Map<String, String>): Map<String, Any>
+
     // ---------------- DOKTER ----------------
     @GET("dokter/read.php")
     suspend fun getDokter(@Query("search") search: String? = null): List<Dokter>

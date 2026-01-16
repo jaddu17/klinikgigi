@@ -13,6 +13,9 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -53,13 +56,29 @@ fun EntryPasienScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
+    // Populate fields when editing
+    LaunchedEffect(pasien) {
+        pasien?.let {
+            nama = it.nama_pasien
+            jenisKelamin = it.jenis_kelamin
+            tanggalLahir = it.tanggal_lahir
+            alamat = it.alamat
+            alamat = it.alamat
+            nomorTelepon = it.nomor_telepon
+        }
+    }
+
     // Handle messages
     LaunchedEffect(message) {
         message?.let { msg ->
             if (msg.contains("berhasil", ignoreCase = true)) {
                 showSuccessDialog = true
             } else {
-                scope.launch { snackbarHostState.showSnackbar(msg) }
+                errorMessage = msg
+                showErrorDialog = true
             }
             pasienViewModel.clearMessage()
         }
@@ -75,6 +94,7 @@ fun EntryPasienScreen(
             jenisKelamin.isNotBlank() &&
             tanggalLahir.isNotBlank() &&
             alamat.isNotBlank() &&
+            telpValid &&
             telpValid &&
             nomorTelepon.length in 11..13
 
@@ -231,6 +251,22 @@ fun EntryPasienScreen(
                     showSuccessDialog = false
                     navigateBack()
                 }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("Gagal") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(
+                    onClick = { showErrorDialog = false }
+                ) {
                     Text("OK")
                 }
             }

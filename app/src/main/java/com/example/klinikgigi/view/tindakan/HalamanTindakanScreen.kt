@@ -48,19 +48,15 @@ fun HalamanTindakanScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
+                actions = {
+                    IconButton(onClick = onTambah) {
+                        Icon(Icons.Default.Add, contentDescription = "Tambah Tindakan")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onTambah,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Tindakan")
-            }
         }
     ) { padding ->
 

@@ -7,6 +7,9 @@ import com.example.klinikgigi.repository.RepositoryKlinik
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class DokterViewModel(private val repository: RepositoryKlinik) : ViewModel() {
 
@@ -59,9 +62,21 @@ class DokterViewModel(private val repository: RepositoryKlinik) : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             try {
-                repository.createDokter(dokter)
-                _message.value = "Dokter berhasil ditambahkan"
-                loadDokter(_searchQuery.value.ifBlank { null }) // refresh sesuai query saat ini
+                // Cek apakah nama dokter sudah ada (case-insensitive)
+                val isDuplicate = _dokterList.value.any { it.nama_dokter.equals(dokter.nama_dokter, ignoreCase = true) }
+                if (isDuplicate) {
+                    _message.value = "Nama dokter sudah ditambahkan"
+                    // Return agar tidak lanjut ke API call
+                    return@launch 
+                }
+
+                val response = repository.createDokter(dokter)
+                if (response.isSuccessful) {
+                    _message.value = "Dokter berhasil ditambahkan"
+                    loadDokter(_searchQuery.value.ifBlank { null }) // refresh sesuai query saat ini
+                } else {
+                    _message.value = "Gagal menyimpan data dokter: ${response.code()}"
+                }
             } catch (e: Exception) {
                 _message.value = e.message ?: "Gagal menyimpan data dokter"
             } finally {
@@ -92,9 +107,23 @@ class DokterViewModel(private val repository: RepositoryKlinik) : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             try {
-                repository.deleteDokter(id)
-                _message.value = "Dokter berhasil dihapus"
-                loadDokter(_searchQuery.value.ifBlank { null })
+                val response = repository.deleteDokter(id)
+                if (response.isSuccessful) {
+                    _message.value = "Dokter berhasil dihapus"
+                    loadDokter(_searchQuery.value.ifBlank { null })
+                } else {
+                    // Parse error message from backend
+                    val errorBody = response.errorBody()?.string()
+                    val errorMsg = try {
+                        // Try to parse JSON error response
+                        val json = kotlinx.serialization.json.Json.parseToJsonElement(errorBody ?: "{}")
+                        json.jsonObject["error"]?.jsonPrimitive?.content 
+                            ?: "Gagal menghapus dokter"
+                    } catch (e: Exception) {
+                        "Gagal menghapus dokter"
+                    }
+                    _message.value = errorMsg
+                }
             } catch (e: Exception) {
                 _message.value = e.message ?: "Gagal menghapus dokter"
             } finally {

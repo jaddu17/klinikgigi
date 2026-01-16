@@ -88,9 +88,14 @@ class JanjiTemuViewModel(
     // ======================
     // CREATE (BENAR, TANPA success)
     // ======================
+    // ======================
+    // CREATE (BENAR, TANPA success)
+    // ======================
     fun createJanjiTemu(janji: JanjiTemu) {
         viewModelScope.launch {
             try {
+                if (validateConflict(janji)) return@launch
+
                 val response = repository.createJanjiTemu(janji)
 
                 if (!response.isSuccessful) {
@@ -111,9 +116,14 @@ class JanjiTemuViewModel(
     // ======================
     // UPDATE
     // ======================
+    // ======================
+    // UPDATE
+    // ======================
     fun updateJanjiTemu(janji: JanjiTemu) {
         viewModelScope.launch {
             try {
+                if (validateConflict(janji)) return@launch
+
                 val response = repository.updateJanjiTemu(janji)
 
                 if (!response.isSuccessful) {
@@ -199,5 +209,54 @@ class JanjiTemuViewModel(
 
     fun clearStatus() {
         _status.value = null
+    }
+
+    private fun validateConflict(newJanji: JanjiTemu): Boolean {
+        val existingList = _janjiList.value
+
+        // Helper untuk normalisasi waktu (ambil 5 karakter pertama: HH:mm)
+        fun String.normalizeTime(): String = this.take(5)
+
+        // Cek Duplikat Persis (Dokter sama & Pasien sama & Waktu sama)
+        val exactDuplicate = existingList.find {
+            it.id_dokter == newJanji.id_dokter &&
+                    it.id_pasien == newJanji.id_pasien &&
+                    it.tanggal_janji == newJanji.tanggal_janji &&
+                    it.jam_janji.normalizeTime() == newJanji.jam_janji.normalizeTime() &&
+                    it.id_janji != newJanji.id_janji
+        }
+
+        if (exactDuplicate != null) {
+            _status.value = "Janji temu sudah ada"
+            return true
+        }
+
+        // Cek konflik Dokter (Dokter yg sama tapi Pasien beda)
+        val dokterConflict = existingList.find {
+            it.id_dokter == newJanji.id_dokter &&
+                    it.tanggal_janji == newJanji.tanggal_janji &&
+                    it.jam_janji.normalizeTime() == newJanji.jam_janji.normalizeTime() &&
+                    it.id_janji != newJanji.id_janji
+        }
+
+        if (dokterConflict != null) {
+            _status.value = "Dokter ini sudah memiliki janji pada waktu tersebut"
+            return true
+        }
+
+        // Cek konflik Pasien (Pasien yg sama tapi Dokter beda)
+        val pasienConflict = existingList.find {
+            it.id_pasien == newJanji.id_pasien &&
+                    it.tanggal_janji == newJanji.tanggal_janji &&
+                    it.jam_janji.normalizeTime() == newJanji.jam_janji.normalizeTime() &&
+                    it.id_janji != newJanji.id_janji
+        }
+
+        if (pasienConflict != null) {
+            _status.value = "Pasien ini sudah memiliki janji pada waktu tersebut"
+            return true
+        }
+
+        return false
     }
 }

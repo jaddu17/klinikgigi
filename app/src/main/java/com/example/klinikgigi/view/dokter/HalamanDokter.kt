@@ -37,12 +37,27 @@ fun HalamanDokter(
     val dokterList by viewModel.dokterList.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val message by viewModel.message.collectAsState()
 
     var textSearch by remember { mutableStateOf(searchQuery) }
     var dokterYangAkanDihapus by remember { mutableStateOf<Dokter?>(null) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(textSearch) {
         viewModel.setSearchQuery(textSearch)
+    }
+
+    // Observe error messages from ViewModel
+    LaunchedEffect(message) {
+        message?.let { msg ->
+            if (msg.contains("tidak dapat dihapus", ignoreCase = true) || 
+                msg.contains("janji temu", ignoreCase = true)) {
+                errorMessage = msg
+                showErrorDialog = true
+            }
+            viewModel.clearMessage()
+        }
     }
 
     Scaffold(
@@ -77,7 +92,6 @@ fun HalamanDokter(
                 .padding(padding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // 🔍 Search Bar
             OutlinedTextField(
                 value = textSearch,
                 onValueChange = { textSearch = it },
@@ -90,7 +104,6 @@ fun HalamanDokter(
                 singleLine = true
             )
 
-            // Konten utama
             when {
                 loading -> Box(
                     Modifier.fillMaxSize(),
@@ -130,7 +143,7 @@ fun HalamanDokter(
         }
     }
 
-    // 💥 AlertDialog
+    // Confirmation Dialog untuk hapus dokter
     dokterYangAkanDihapus?.let { dokter ->
         AlertDialog(
             onDismissRequest = { dokterYangAkanDihapus = null },
@@ -151,6 +164,27 @@ fun HalamanDokter(
             dismissButton = {
                 TextButton(onClick = { dokterYangAkanDihapus = null }) {
                     Text("Batal")
+                }
+            }
+        )
+    }
+
+    // Error Dialog untuk menampilkan pesan error (misal: dokter punya janji aktif)
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            icon = { 
+                Icon(
+                    Icons.Default.Delete, 
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                ) 
+            },
+            title = { Text("Tidak Dapat Menghapus") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("OK")
                 }
             }
         )

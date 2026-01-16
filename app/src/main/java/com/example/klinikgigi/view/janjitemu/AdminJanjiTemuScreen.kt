@@ -277,7 +277,6 @@ fun JanjiTemuCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Actions
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

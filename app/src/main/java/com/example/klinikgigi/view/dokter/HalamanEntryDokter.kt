@@ -18,8 +18,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.klinikgigi.modeldata.Dokter
 import com.example.klinikgigi.viewmodel.DokterViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,14 +42,17 @@ fun HalamanEntryDokter(
     val loading by viewModel.loading.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(message) {
         message?.let { msg ->
             if (msg.contains("berhasil", ignoreCase = true)) {
                 showSuccessDialog = true
             } else {
-                scope.launch { snackbarHostState.showSnackbar(msg) }
+                errorMessage = msg
+                showErrorDialog = true
             }
             viewModel.clearMessage()
         }
@@ -164,6 +165,22 @@ fun HalamanEntryDokter(
                         showSuccessDialog = false
                         onSelesai()
                     }
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("Gagal") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(
+                    onClick = { showErrorDialog = false }
                 ) {
                     Text("OK")
                 }
