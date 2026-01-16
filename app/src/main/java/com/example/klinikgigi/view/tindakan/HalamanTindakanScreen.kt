@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.klinikgigi.modeldata.Tindakan
 import com.example.klinikgigi.viewmodel.TindakanViewModel
 
@@ -49,8 +50,18 @@ fun HalamanTindakanScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onTambah) {
-                        Icon(Icons.Default.Add, contentDescription = "Tambah Tindakan")
+                    Button(
+                        onClick = onTambah,
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("Tambah", fontSize = 14.sp)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -25,6 +25,12 @@ import androidx.navigation.NavController
 import com.example.klinikgigi.viewmodel.AuthViewModel
 import com.example.klinikgigi.uicontroller.route.*
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
+import com.example.klinikgigi.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +78,7 @@ fun LoginScreen(
                     snackbarHostState.showSnackbar(currentMessage)
                 }
             } else {
-                loginError = "Username atau password salah"
+                loginError = currentMessage
             }
             viewModel.clearMessage()
         }
@@ -110,6 +116,14 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.gigi),
+                        contentDescription = "Logo Klinik",
+                        modifier = Modifier
+                            .size(200.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                     Text(
                         text = "Selamat Datang!",
                         style = MaterialTheme.typography.headlineMedium.copy(

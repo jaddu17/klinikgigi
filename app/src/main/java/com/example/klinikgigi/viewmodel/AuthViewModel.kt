@@ -37,6 +37,9 @@ class AuthViewModel(
                 _user.value = user
                 _message.value = "success"
 
+            } catch (e: java.io.IOException) {
+                _user.value = null
+                _message.value = "gagal terhubung ke koneksi internet"
             } catch (e: Exception) {
                 _user.value = null
                 _message.value = "Login gagal"
@@ -50,11 +53,6 @@ class AuthViewModel(
     fun register(username: String, password: String, role: String) {
         if (username.isBlank() || password.isBlank()) {
             _message.value = "Username dan password wajib diisi"
-            return
-        }
-
-        if (role != "admin" && role != "dokter") {
-            _message.value = "Role harus 'admin' atau 'dokter'"
             return
         }
 
@@ -78,6 +76,8 @@ class AuthViewModel(
                 // Lanjutkan registrasi jika username tersedia
                 repository.register(username, password, role)
                 _message.value = "Registrasi berhasil"
+            } catch (e: java.io.IOException) {
+                _message.value = "gagal terhubung ke koneksi internet"
             } catch (e: Exception) {
                 // Ambil pesan error dari API jika memungkinkan
                 val errorMsg = when {

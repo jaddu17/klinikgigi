@@ -69,21 +69,27 @@ fun HalamanDokter(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
+                actions = {
+                    Button(
+                        onClick = onTambah,
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("Tambah", fontSize = 14.sp)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onTambah,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Dokter")
-            }
-        }
     ) { padding ->
 
         Column(

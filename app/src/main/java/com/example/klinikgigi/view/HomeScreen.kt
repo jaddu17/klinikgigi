@@ -3,6 +3,7 @@ package com.example.klinikgigi.view
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -11,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale.Companion.Crop
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,8 +42,16 @@ fun HomeScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // You might want to add a logo here if available
-        // Image(painter = painterResource(id = R.drawable.your_logo), contentDescription = null)
+        Image(
+            painter = painterResource(id = R.drawable.gigi),
+            contentDescription = "Logo Klinik",
+            modifier = Modifier
+                .size(200.dp)
+                .clip(CircleShape),
+            contentScale = Crop
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = "Selamat Datang di\nKlinik Gigi",

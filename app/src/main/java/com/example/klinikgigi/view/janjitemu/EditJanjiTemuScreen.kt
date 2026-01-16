@@ -48,7 +48,7 @@ fun EditJanjiTemuScreen(
     var jam by remember { mutableStateOf("") }
     var keluhan by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(StatusJanji.KONFIRMASI) }
-    
+
     var showSuccessDialog by remember { mutableStateOf(false) }
 
     val statusList = StatusJanji.values().toList()
@@ -72,7 +72,7 @@ fun EditJanjiTemuScreen(
 
     LaunchedEffect(statusMsg) {
         statusMsg?.let {
-             if (it.contains("berhasil", ignoreCase = true)) {
+            if (it.contains("berhasil", ignoreCase = true)) {
                 showSuccessDialog = true
             } else {
                 scope.launch { snackbarHostState.showSnackbar(it) }
@@ -83,14 +83,14 @@ fun EditJanjiTemuScreen(
 
     val isChanged = selectedJanji?.let {
         it.id_dokter != selectedDokterId ||
-        it.id_pasien != selectedPasienId ||
-        it.tanggal_janji != tanggal ||
-        it.jam_janji != jam ||
-        it.keluhan != keluhan ||
-        it.status != status
+                it.id_pasien != selectedPasienId ||
+                it.tanggal_janji != tanggal ||
+                it.jam_janji != jam ||
+                it.keluhan != keluhan ||
+                it.status != status
     } ?: false
 
-    val isFormValid = selectedDokterId != null && selectedPasienId != null && tanggal.isNotBlank() && jam.isNotBlank()
+    val isFormValid = selectedDokterId != null && selectedPasienId != null && tanggal.isNotBlank() && jam.isNotBlank() && keluhan.isNotBlank()
 
     // DatePicker
     val context = LocalContext.current
@@ -157,11 +157,11 @@ fun EditJanjiTemuScreen(
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(expanded = expandedDokter, onDismissRequest = { expandedDokter = false }) {
-                    dokterList.forEach { 
+                    dokterList.forEach {
                         DropdownMenuItem(
                             text = { Text(it.nama_dokter) },
                             onClick = { selectedDokterId = it.id_dokter; expandedDokter = false }
-                        ) 
+                        )
                     }
                 }
             }
@@ -184,11 +184,11 @@ fun EditJanjiTemuScreen(
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(expanded = expandedPasien, onDismissRequest = { expandedPasien = false }) {
-                    pasienList.forEach { 
+                    pasienList.forEach {
                         DropdownMenuItem(
                             text = { Text(it.nama_pasien) },
                             onClick = { selectedPasienId = it.id_pasien; expandedPasien = false }
-                        ) 
+                        )
                     }
                 }
             }
@@ -242,11 +242,11 @@ fun EditJanjiTemuScreen(
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(expanded = expandedStatus, onDismissRequest = { expandedStatus = false }) {
-                    statusList.forEach { 
+                    statusList.forEach {
                         DropdownMenuItem(
                             text = { Text(it.name) },
                             onClick = { status = it; expandedStatus = false }
-                        ) 
+                        )
                     }
                 }
             }

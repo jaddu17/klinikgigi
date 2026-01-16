@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.klinikgigi.modeldata.Pasien
 import com.example.klinikgigi.viewmodel.PasienViewModel
 
@@ -51,19 +52,25 @@ fun HalamanPasienScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
+                actions = {
+                    Button(
+                        onClick = navigateToEntryPasien,
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("Tambah", fontSize = 14.sp)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = navigateToEntryPasien,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Pasien")
-            }
         }
     ) { padding ->
 

@@ -45,6 +45,8 @@ fun EntryJanjiTemuScreen(
 
     var selectedDokterId by remember { mutableStateOf<Int?>(null) }
     var selectedPasienId by remember { mutableStateOf<Int?>(null) }
+    var dokterSearchQuery by remember { mutableStateOf("") }
+    var pasienSearchQuery by remember { mutableStateOf("") }
     var tanggal by remember { mutableStateOf("") }
     var jam by remember { mutableStateOf("") }
     var keluhan by remember { mutableStateOf("") }
@@ -57,7 +59,7 @@ fun EntryJanjiTemuScreen(
     val statusList = StatusJanji.values().toList()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(selectedJanji) {
+    LaunchedEffect(selectedJanji, dokterList, pasienList) {
         selectedJanji?.let {
             selectedDokterId = it.id_dokter
             selectedPasienId = it.id_pasien
@@ -65,6 +67,10 @@ fun EntryJanjiTemuScreen(
             jam = it.jam_janji
             keluhan = it.keluhan
             status = it.status
+            
+            // Initialize search queries with names
+            dokterSearchQuery = dokterList.find { d -> d.id_dokter == it.id_dokter }?.nama_dokter ?: ""
+            pasienSearchQuery = pasienList.find { p -> p.id_pasien == it.id_pasien }?.nama_pasien ?: ""
         }
     }
 
@@ -84,7 +90,8 @@ fun EntryJanjiTemuScreen(
     val isFormValid = selectedDokterId != null && 
                       selectedPasienId != null && 
                       tanggal.isNotBlank() && 
-                      jam.isNotBlank()
+                      jam.isNotBlank() &&
+                      keluhan.isNotBlank()
 
     // DatePicker
     val context = LocalContext.current
@@ -141,56 +148,98 @@ fun EntryJanjiTemuScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Dropdown Dokter
+            // Dropdown Dokter (Searchable)
             var expandedDokter by remember { mutableStateOf(false) }
-            val selectedDokterName = dokterList.find { it.id_dokter == selectedDokterId }?.nama_dokter ?: ""
+            val filteredDokter = dokterList.filter { 
+                it.nama_dokter.contains(dokterSearchQuery, ignoreCase = true) 
+            }
+            
             ExposedDropdownMenuBox(
                 expanded = expandedDokter,
                 onExpandedChange = { expandedDokter = !expandedDokter }
             ) {
                 OutlinedTextField(
-                    value = selectedDokterName,
-                    onValueChange = {},
-                    readOnly = true,
+                    value = dokterSearchQuery,
+                    onValueChange = { 
+                        dokterSearchQuery = it
+                        expandedDokter = true
+                        // Reset ID if query is changed from the selected name
+                        val selectedName = dokterList.find { d -> d.id_dokter == selectedDokterId }?.nama_dokter
+                        if (it != selectedName) {
+                            selectedDokterId = null
+                        }
+                    },
                     label = { Text("Pilih Dokter") },
                     leadingIcon = { Icon(Icons.Default.MedicalServices, null) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedDokter) },
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    placeholder = { Text("Ketik nama dokter...") }
                 )
-                ExposedDropdownMenu(expanded = expandedDokter, onDismissRequest = { expandedDokter = false }) {
-                    dokterList.forEach { 
-                        DropdownMenuItem(
-                            text = { Text(it.nama_dokter) },
-                            onClick = { selectedDokterId = it.id_dokter; expandedDokter = false }
-                        ) 
+                
+                if (filteredDokter.isNotEmpty()) {
+                    ExposedDropdownMenu(
+                        expanded = expandedDokter, 
+                        onDismissRequest = { expandedDokter = false }
+                    ) {
+                        filteredDokter.forEach { 
+                            DropdownMenuItem(
+                                text = { Text(it.nama_dokter) },
+                                onClick = { 
+                                    selectedDokterId = it.id_dokter
+                                    dokterSearchQuery = it.nama_dokter
+                                    expandedDokter = false 
+                                }
+                            ) 
+                        }
                     }
                 }
             }
 
-            // Dropdown Pasien
+            // Dropdown Pasien (Searchable)
             var expandedPasien by remember { mutableStateOf(false) }
-            val selectedPasienName = pasienList.find { it.id_pasien == selectedPasienId }?.nama_pasien ?: ""
+            val filteredPasien = pasienList.filter { 
+                it.nama_pasien.contains(pasienSearchQuery, ignoreCase = true) 
+            }
+            
             ExposedDropdownMenuBox(
                 expanded = expandedPasien,
                 onExpandedChange = { expandedPasien = !expandedPasien }
             ) {
                 OutlinedTextField(
-                    value = selectedPasienName,
-                    onValueChange = {},
-                    readOnly = true,
+                    value = pasienSearchQuery,
+                    onValueChange = { 
+                        pasienSearchQuery = it
+                        expandedPasien = true
+                        // Reset ID if query is changed from the selected name
+                        val selectedName = pasienList.find { p -> p.id_pasien == selectedPasienId }?.nama_pasien
+                        if (it != selectedName) {
+                            selectedPasienId = null
+                        }
+                    },
                     label = { Text("Pilih Pasien") },
                     leadingIcon = { Icon(Icons.Default.Person, null) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedPasien) },
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    placeholder = { Text("Ketik nama pasien...") }
                 )
-                ExposedDropdownMenu(expanded = expandedPasien, onDismissRequest = { expandedPasien = false }) {
-                    pasienList.forEach { 
-                        DropdownMenuItem(
-                            text = { Text(it.nama_pasien) },
-                            onClick = { selectedPasienId = it.id_pasien; expandedPasien = false }
-                        ) 
+                
+                if (filteredPasien.isNotEmpty()) {
+                    ExposedDropdownMenu(
+                        expanded = expandedPasien, 
+                        onDismissRequest = { expandedPasien = false }
+                    ) {
+                        filteredPasien.forEach { 
+                            DropdownMenuItem(
+                                text = { Text(it.nama_pasien) },
+                                onClick = { 
+                                    selectedPasienId = it.id_pasien
+                                    pasienSearchQuery = it.nama_pasien
+                                    expandedPasien = false 
+                                }
+                            ) 
+                        }
                     }
                 }
             }

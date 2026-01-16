@@ -111,9 +111,17 @@ class PasienViewModel(
         viewModelScope.launch {
             _loading.value = true
             try {
-                repository.updatePasien(pasien)
-                loadPasien()
-                _selectedPasien.value = pasien
+                val response = repository.updatePasien(pasien)
+                if (response.isSuccessful) {
+                    _message.value = "Pasien berhasil diperbarui"
+                    loadPasien()
+                    _selectedPasien.value = pasien
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    _message.value = parseError(errorBody)
+                }
+            } catch (e: Exception) {
+                _message.value = e.message
             } finally {
                 _loading.value = false
             }
