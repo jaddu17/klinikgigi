@@ -8,8 +8,11 @@ object DestinasiRekamMedisByJanji : DestinasiNavigasi {
     override val titleRes = R.string.rekam_medis
 
     const val ID_JANJI = "idJanji"
+    const val IS_ADMIN = "isAdmin"
 
-    fun createRoute(idJanji: Int): String {
-        return "$route/$idJanji"
+    val routeWithArgs = "$route/{$ID_JANJI}/{$IS_ADMIN}"
+
+    fun createRoute(idJanji: Int, isAdmin: Boolean): String {
+        return "$route/$idJanji/$isAdmin"
     }
 }

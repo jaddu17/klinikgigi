@@ -130,16 +130,12 @@ fun HostNavigasiKlinik(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
                 onLihatRekamMedis = { idJanji ->
-                    navController.navigate(DestinasiRekamMedisByJanji.createRoute(idJanji))
-                },
-                onTambahRekamMedis = { idJanji ->
-                    navController.navigate(DestinasiEntryRekamMedis.createRoute(idJanji))
+                    navController.navigate(DestinasiRekamMedisByJanji.createRoute(idJanji, isAdmin = false))
                 }
             )
         }
 
         composable(DestinasiRekamMedisDokter.route) {
-
             val vm: RekamMedisViewModel =
                 viewModel(factory = PenyediaViewModel.Factory)
 
@@ -231,21 +227,25 @@ fun HostNavigasiKlinik(
                 navigateToAdd = {
                     navController.navigate(DestinasiEntryJanji.route)
                 },
+
                 navigateToEdit = { idJanji ->
                     navController.navigate(
                         "${DestinasiEditJanjiTemu.route}/$idJanji"
                     )
                 },
+
                 navigateToEntryRekamMedis = { idJanji ->
                     navController.navigate(
                         DestinasiEntryRekamMedis.createRoute(idJanji)
                     )
                 },
+
                 navigateToLihatRekamMedis = { idJanji ->
                     navController.navigate(
-                        DestinasiRekamMedisByJanji.createRoute(idJanji)
+                        DestinasiRekamMedisByJanji.createRoute(idJanji, isAdmin = true)
                     )
                 },
+
                 navigateBack = {
                     navController.popBackStack()
                 }
@@ -351,10 +351,13 @@ fun HostNavigasiKlinik(
         }
 
         composable(
-            route = "${DestinasiRekamMedisByJanji.route}/{${DestinasiRekamMedisByJanji.ID_JANJI}}",
+            route = DestinasiRekamMedisByJanji.routeWithArgs,
             arguments = listOf(
                 navArgument(DestinasiRekamMedisByJanji.ID_JANJI) {
                     type = NavType.IntType
+                },
+                navArgument(DestinasiRekamMedisByJanji.IS_ADMIN) {
+                    type = NavType.BoolType
                 }
             )
         ) { backStackEntry ->
@@ -364,12 +367,18 @@ fun HostNavigasiKlinik(
                     ?.getInt(DestinasiRekamMedisByJanji.ID_JANJI)
                     ?: return@composable
 
+            val isAdmin =
+                backStackEntry.arguments
+                    ?.getBoolean(DestinasiRekamMedisByJanji.IS_ADMIN)
+                    ?: false
+
             val vm: RekamMedisViewModel =
                 viewModel(factory = PenyediaViewModel.Factory)
 
             RekamMedisByJanjiScreen(
                 idJanji = idJanji,
-                viewModel = vm, //
+                viewModel = vm,
+                isAdmin = isAdmin,
                 navigateBack = { navController.popBackStack() },
                 navigateToEdit = { idRekam ->
                     navController.navigate(

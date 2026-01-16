@@ -28,6 +28,7 @@ import com.example.klinikgigi.viewmodel.RekamMedisViewModel
 @Composable
 fun HalamanRekamMedis(
     viewModel: RekamMedisViewModel,
+    isAdmin: Boolean = true,
     onEdit: (Int) -> Unit,
     onBack: () -> Unit
 ) {
@@ -137,6 +138,7 @@ fun HalamanRekamMedis(
                             rekamMedis = rm,
                             dokterName = dokterName,
                             pasienName = pasienName,
+                            isAdmin = isAdmin,
                             onEdit = { onEdit(rm.id_rekam) },
                             onDelete = { rekamMedisHapus = rm }
                         )
@@ -180,6 +182,7 @@ fun RekamMedisCard(
     rekamMedis: RekamMedis,
     dokterName: String,
     pasienName: String,
+    isAdmin: Boolean = true,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -251,22 +254,24 @@ fun RekamMedisCard(
 
             Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.surfaceVariant)
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Edit")
-                }
+            if (isAdmin) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Edit")
+                    }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-                    Icon(Icons.Default.Delete, contentDescription = "Hapus", modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Hapus")
+                    TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                        Icon(Icons.Default.Delete, contentDescription = "Hapus", modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Hapus")
+                    }
                 }
             }
         }

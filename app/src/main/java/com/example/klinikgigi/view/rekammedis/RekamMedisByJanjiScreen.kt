@@ -27,6 +27,7 @@ import com.example.klinikgigi.viewmodel.RekamMedisViewModel
 fun RekamMedisByJanjiScreen(
     idJanji: Int,
     viewModel: RekamMedisViewModel,
+    isAdmin: Boolean = true, // Default true agar pemanggil lama tidak error
     navigateBack: () -> Unit,
     navigateToEdit: (Int) -> Unit
 ) {
@@ -42,7 +43,12 @@ fun RekamMedisByJanjiScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Rekam Medis", fontWeight = FontWeight.Bold) },
+                title = { 
+                    Text(
+                        if (isAdmin) "Detail Rekam Medis" else "Detail Rekam Medis (View Only)", 
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -117,32 +123,45 @@ fun RekamMedisByJanjiScreen(
                                 content = rm.resep.ifBlank { "-" }
                             )
 
-                            Spacer(Modifier.height(8.dp))
+                            if (isAdmin) {
+                                Spacer(Modifier.height(8.dp))
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                OutlinedButton(
-                                    onClick = { navigateToEdit(rm.id_rekam) },
-                                    shape = RoundedCornerShape(8.dp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Edit")
-                                }
+                                    OutlinedButton(
+                                        onClick = { navigateToEdit(rm.id_rekam) },
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Edit")
+                                    }
 
-                                Spacer(Modifier.width(8.dp))
-
-                                Button(
-                                    onClick = { viewModel.deleteRekamMedis(rm.id_rekam) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Hapus")
+
+                                    Button(
+                                        onClick = { viewModel.deleteRekamMedis(rm.id_rekam) },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Hapus")
+                                    }
                                 }
                             }
                         }

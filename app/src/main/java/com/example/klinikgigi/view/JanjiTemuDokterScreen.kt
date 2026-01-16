@@ -47,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import com.example.klinikgigi.viewmodel.DokterDashboardViewModel
 
 @Composable
@@ -54,8 +55,7 @@ fun JanjiTemuDokterScreen(
     idDokter: Int,
     viewModel: DokterDashboardViewModel,
     onBack: () -> Unit,
-    onLihatRekamMedis: (Int) -> Unit,
-    onTambahRekamMedis: (Int) -> Unit
+    onLihatRekamMedis: (Int) -> Unit
 ) {
     LaunchedEffect(idDokter) {
         viewModel.loadJanjiTemuByDokterId(idDokter)
@@ -76,8 +76,7 @@ fun JanjiTemuDokterScreen(
             JanjiTemuDokterContent(
                 dokter = safeDokter,
                 onBack = onBack,
-                onLihatRekamMedis = onLihatRekamMedis,
-                onTambahRekamMedis = onTambahRekamMedis
+                onLihatRekamMedis = onLihatRekamMedis
             )
         } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Data tidak tersedia")
@@ -90,8 +89,7 @@ fun JanjiTemuDokterScreen(
 fun JanjiTemuDokterContent(
     dokter: JanjiTemuPerDokter,
     onBack: () -> Unit,
-    onLihatRekamMedis: (Int) -> Unit,
-    onTambahRekamMedis: (Int) -> Unit
+    onLihatRekamMedis: (Int) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -264,21 +262,22 @@ fun JanjiTemuDokterContent(
                                     Text("Lihat Rekam Medis")
                                 }
                             } else {
-                                Button(
-                                    onClick = { onTambahRekamMedis(janji.id_janji) },
+                                OutlinedButton(
+                                    onClick = { },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.secondary
+                                    enabled = false,
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        disabledContentColor = MaterialTheme.colorScheme.outline
                                     )
                                 ) {
                                     Icon(
-                                        Icons.Default. MedicalServices, 
+                                        Icons.Default.MedicalServices, 
                                         contentDescription = null, 
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Tambah Rekam Medis")
+                                    Text("Data Rekam Medis Belum Ada")
                                 }
                             }
                         }
